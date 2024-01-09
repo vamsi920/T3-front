@@ -1,0 +1,75 @@
+//   {
+    //     "meta": {
+    //         "disclaimer": "Do not rely on openFDA to make decisions regarding medical care. While we make every effort to ensure that data is accurate, you should assume all results are unvalidated. We may limit or otherwise restrict your access to the API in line with our Terms of Service.",
+    //         "terms": "https://open.fda.gov/terms/",
+    //         "license": "https://open.fda.gov/license/",
+    //         "last_updated": "2024-01-03",
+    //         "results": {
+    //             "skip": 0,
+    //             "limit": 1,
+    //             "total": 1
+    //         }
+    //     },
+    //     "results": [
+    //         {
+    //             "product_ndc": "68180-951",
+    //             "generic_name": "Hydrocortisone Butyrate",
+    //             "labeler_name": "Lupin Pharmaceuticals, Inc.",
+    //             "brand_name": "Hydrocortisone Butyrate",
+    //             "active_ingredients": [
+    //                 {
+    //                     "name": "HYDROCORTISONE BUTYRATE",
+    //                     "strength": "1 mg/mL"
+    //                 }
+    //             ],
+    //             "finished": true,
+    //             "packaging": [
+    //                 {
+    //                     "package_ndc": "68180-951-01",
+    //                     "description": "1 BOTTLE in 1 CARTON (68180-951-01)  / 59 mL in 1 BOTTLE",
+    //                     "marketing_start_date": "20180817",
+    //                     "sample": false
+    //                 },
+    //                 {
+    //                     "package_ndc": "68180-951-02",
+    //                     "description": "1 BOTTLE in 1 CARTON (68180-951-02)  / 118 mL in 1 BOTTLE",
+    //                     "marketing_start_date": "20180817",
+    //                     "sample": false
+    //                 }
+    //             ],
+    //             "listing_expiration_date": "20241231",
+    //             "openfda": {
+    //                 "manufacturer_name": [
+    //                     "Lupin Pharmaceuticals, Inc."
+    //                 ],
+    //                 "rxcui": [
+    //                     "1370763"
+    //                 ],
+    //                 "spl_set_id": [
+    //                     "275f3fcf-1170-4df0-9a8d-1482bda409cb"
+    //                 ],
+    //                 "is_original_packager": [
+    //                     true
+    //                 ],
+    //                 "unii": [
+    //                     "05RMF7YPWN"
+    //                 ]
+    //             },
+    //             "marketing_category": "ANDA",
+    //             "dosage_form": "LOTION",
+    //             "spl_id": "02b1142f-ced2-47db-8817-fa46d61176c6",
+    //             "product_type": "HUMAN PRESCRIPTION DRUG",
+    //             "route": [
+    //                 "TOPICAL"
+    //             ],
+    //             "marketing_start_date": "20180817",
+    //             "product_id": "68180-951_02b1142f-ced2-47db-8817-fa46d61176c6",
+    //             "application_number": "ANDA210209",
+    //             "brand_name_base": "Hydrocortisone Butyrate",
+    //             "pharm_class": [
+    //                 "Corticosteroid Hormone Receptor Agonists [MoA]",
+    //                 "Corticosteroid [EPC]"
+    //             ]
+    //         }
+    //     ]
+    // }
