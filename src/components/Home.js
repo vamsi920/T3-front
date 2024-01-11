@@ -7,7 +7,7 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Stack from "@mui/material/Stack";
 import Button from "@mui/material/Button";
 import axios from "axios";
@@ -17,9 +17,13 @@ import { addEntry, removeEntry, editEntry } from "../reducers/dataSlice";
 import Slide from '@mui/material/Slide';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import icon from "./miniComponents/alertbox";
+import CircularProgress from '@mui/joy/CircularProgress';
+import Select from '@mui/material/Select';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
 // const ExportToExcel = require('./functions/exportToExcel.js');
 // import { Result } from 'aws-cdk-lib/aws-stepfunctions';
-
 //////// function to convert data to json format
 const createData = (NDC, Manufacturer, Medicine, Lot, Expiry, mg, QTY) => {
   return { NDC, Manufacturer, Medicine, Lot, Expiry, mg, QTY };
@@ -64,34 +68,58 @@ const fetchData = async (NDC) => {
     }
   }
 };
-// const convertDataForExcel =(a) => {
-//   const data = [];
-//   // adding 19 spaces so that it will add data in specific rows and colums
-//   for (let i = 0; i < 18; i++) {
-//     const row = {};
-//     data.push(row);
-//   }
-//   for (let i = 0; i < a.length; i++) {
-//     const row = a[i];
-//     const newRow = {
-//       NDC: row.NDC,
-//       Manufacturer: row.Manufacturer,
-//       Medicine: row.Medicine,
-//       Lot: row.Lot,
-//       Expiry: row.Expiry,
-//       mg: row.mg,
-//       QTY: row.QTY,
-//     };
-//     data.push(newRow);
-//   }
-//   return data;
-// }
+const accounts = {
+  Parmed: {
+      name: "ParMed Pharmaceuticals",
+      companyName: "Parmed",
+      address: "5960 East Shelby Drive, Suite 100",
+      address2: " Memphis, TN 3841",
+      phone: "(800) 727-6331",
+      DEA: "xxxxxxxxxxx",
+      mail: "chris.dewitt@parmedpharm.com"
+  },
+  Cardinal: {
+      name: "Cardinal Health",
+      companyName: "Acd",
+      address: "7000 Cardinal Place",
+      address2: "Dublin, OH 43017",
+      phone: "(800) 926-3161",
+      DEA: "xxxxxxxxxxx",
+      mail: "krish@cardinal.com"}
+}
+
+const wholesalers = {
+  Wholesaler1: {
+      name: "Proud Pharmaceuticals",
+      companyName: "Testing",
+      address: "5960 East Shelby Drive, Suite 100",
+      address2: " Memphis, TN 3841",
+      phone: "(800) 727-6331",
+      DEA: "xxxxxxxxxxx",
+      mail: "chris.dewitt@parmedpharm.com"
+  },
+  Wholesaler2: {
+      name: "Jealous Health",
+      companyName: "Testing2",
+      address: "7000 Cardinal Place",
+      address2: "Dublin, OH 43017",
+      phone: "(800) 926-3161",
+      DEA: "xxxxxxxxxxx",
+      mail: "krish@cardinal.com"}
+}
+
 
 const Home = () => {
 
   ////////// local states////////////////////////////////
   const [rowsFinal, setRows] = useState(rows);
   const [checked, setChecked] = React.useState(false);
+  const [scanChecked, setScanChecked] = useState(false);
+  const [barcodeInput, setBarcodeInput] = useState('');
+  const [continousScanningInput, setContinousScanningInput] = useState('');
+  const [account, setAccount] = useState('');
+  const [wholesaler, setWholesaler] = useState('');
+
   ///////////////////////////////////////////////////////
 
   /////////// redux states///////////////////////////////
@@ -99,12 +127,17 @@ const Home = () => {
   ///////////////////////////////////////////////////////
 
   const dispatch = useDispatch();
+  const barcodeInputRef = useRef(null);
 
 
-  console.log(data);
+  // console.log(data);
   const handleFormSubmit = async (event) => {
     event.preventDefault(); // Prevents the default form submission behavior
     const barcodeValue = event.target.elements.barcodeInput.value;
+    if (scanChecked) {
+      // Process the barcodeInput data here
+      console.log("Scanned Barcode:", barcodeInput);
+    }
     console.log(`Entered barcode: ${barcodeValue}`);
     // rows.push(createData('2345678901', 'MediCare', 'Antipyretic', 'E97531', '2023-09-05', '100mg', 120))
     // console.log(rows)
@@ -159,9 +192,69 @@ const Home = () => {
 
     // clearing search bar input after sending the data
     document.getElementById("barcodeInput").value = "";
-    console.log(data);
+    // console.log(barcodeInput)
+    // console.log(data);
+    
 
   };
+
+  /////// function to handle scan button clicked 
+  const handleClickScan = () => {
+    setScanChecked(true);
+    if (barcodeInputRef.current) {
+      barcodeInputRef.current.click();
+      barcodeInputRef.current.focus();
+    }
+  };
+
+  const handleChangeAccount = (event) => {
+    setAccount(event.target.value);
+  };
+  
+  const handleChangeWholesaler = (event) => {
+    setWholesaler(event.target.value);
+  }
+
+  ////////////// function to get input even without input being entered
+  // document.addEventListener("keypress", function(e) {
+  //   if (e.target.tagName !== "INPUT") {
+  //     var input = document.querySelector(".barInput");
+  //     input.focus();
+  //     input.value = e.key;
+  //     e.preventDefault();
+  //   }
+  //   // console log the input captured and appending to continousScaningInput state
+  //   console.log(input.value);
+  //   setBarcodeInput((prev) => prev + e.key);
+  //   // console.log(barcodeInput)
+    
+  //   // setContinousScanningInput((prev) => prev + e.key);
+  //   // console.log(continousScanningInput)
+  // });
+
+
+  // useEffect(() => {
+  //   const handleKeyPress = (e) => {
+
+  //     if (e.target.tagName !== 'INPUT' && barcodeInputRef.current) {
+  //       barcodeInputRef.current.focus();
+  //       barcodeInputRef.current.value = e.key;
+  //       e.preventDefault();
+  //       setBarcodeInput((prev) => prev + e.key);
+  //       console.log(barcodeInput) 
+
+  //     }
+  //   };
+
+  //   document.addEventListener('keypress', handleKeyPress);
+  //   console.log(barcodeInput)
+  //   return () => {
+  //     document.removeEventListener('keypress', handleKeyPress);
+  //   };
+    
+  // }, []);
+
+
 
   const ExportToExcelAPI = async () => {
     // console.log(rowsFinal)
@@ -170,17 +263,15 @@ const Home = () => {
     var dataObj = {};
     dataObj["data"] = rowsFinal;
     dataObj = JSON.stringify(dataObj);
-    // axios.post("http://localhost:105/extodm/invoice.xlsx", {
-    //   data: rowsFinal
-    // })
-    // .then((response) => {
-    //   console.log(response);
-    // });
+    var acc = accounts[account];
+    var whole = wholesalers[wholesaler];
     try {
       await fetch("http://localhost:105/extodm/invoice.xlsx", {
         method: "POST",
         body: JSON.stringify({
           data: data['data'],
+          account: acc,
+          wholesaler: whole
         }),
         headers: {
           "Content-type": "application/json; charset=UTF-8",
@@ -200,20 +291,41 @@ const Home = () => {
   return (
     <div className="App">
       <Box
+      
         component="form"
         onSubmit={handleFormSubmit}
-        sx={{
-          "& > :not(style)": { m: 1, width: "25ch" },
-        }}
         noValidate
         autoComplete="off"
       >
-        <TextField
+        
+      <TextField
           id="barcodeInput"
+          // ref = {barcodeInputRef}
           name="barcodeInput"
           label="Click here and scan"
           variant="outlined"
+          // value={barcodeInput}
+          // type="text"
+          // class = 'barInput'
+          // onChange={(e) => setBarcodeInput(e.target.value)}
+          // style={{ position: 'absolute', top: 0, left: 0, 
+          // visibility: 'hidden' 
+        // }}
         />
+      
+        {/* ternary operator to switch between two components */}
+        {/* {!scanChecked ? <CircularProgress size="lg" determinate value={100}
+        onClick={handleClickScan}
+        >
+        Scan
+      </CircularProgress> : <CircularProgress size="lg" 
+      onClick={() => {
+        setScanChecked(false)
+      }
+      }
+      >
+        Stop
+      </CircularProgress>} */}
       </Box>
       <TableContainer component={Paper}>
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
@@ -252,18 +364,6 @@ const Home = () => {
                       variant="contained"
                       color="success"
                       onClick={() => {
-                        // const index = rowsFinal.indexOf(row);
-                        // if (index > -1) {
-                        //   const newValue = window.prompt(
-                        //     "Enter new quantity: "
-                        //   );
-                        //   const newQuantity = parseInt(newValue, 10);
-                        //   if (!isNaN(newQuantity) && newQuantity > 0) {
-                        //     row.QTY = newQuantity;
-                        //     setRows([...rowsFinal]);
-                        //   }
-                        // }
-                        // const index = rowsFinal.indexOf(row);
                         var index = -1; 
                         for (let i = 0; i < rowsFinal.length; i++)
                         {
@@ -339,7 +439,40 @@ const Home = () => {
       <Slide direction="up" in={checked} mountOnEnter unmountOnExit>
         {icon}
       </Slide>
-
+      <FormControl 
+      style={{
+        marginTop: '10px',
+      }}
+      >
+        <InputLabel id="account">Account</InputLabel>
+        <Select
+          labelId="account"
+          id="account"
+          value={account}
+          label="Account"
+          onChange={handleChangeAccount}
+          onLoad={()=>{
+          }}
+        >
+          {Object.keys(accounts).map((e, v)=> <MenuItem value={e}>{e}</MenuItem>)}
+        </Select>
+      </FormControl>
+      <FormControl 
+      style={{
+        marginTop: '10px',
+      }}
+      >
+        <InputLabel id="wholesaler">Wholesaler</InputLabel>
+        <Select
+          labelId="wholesaler"
+          id="wholesaler"
+          value={wholesaler}
+          label="wholesaler"
+          onChange={handleChangeWholesaler}
+        >
+          {Object.keys(wholesalers).map((e, v)=> <MenuItem value={e}>{e}</MenuItem>)}
+        </Select>
+      </FormControl>
     </div>
   );
 };
