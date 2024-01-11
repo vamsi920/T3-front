@@ -22,6 +22,15 @@ import Select from '@mui/material/Select';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
+import { green } from '@mui/material/colors';
+import Fab from '@mui/material/Fab';
+import CheckIcon from '@mui/icons-material/Check';
+// import Slide from '@mui/material/Slide';
 // const ExportToExcel = require('./functions/exportToExcel.js');
 // import { Result } from 'aws-cdk-lib/aws-stepfunctions';
 //////// function to convert data to json format
@@ -34,14 +43,23 @@ const rows = [
   // Add more rows as needed
 ];
 const fetchAndParseData = async (variant) => {
+  console.log(process.env.REACT_APP_QR_OPENFDA_SEARCH_URL)
   const query =
-    "https://api.fda.gov/drug/ndc.json?search=product_ndc:" +
+    process.env.REACT_APP_QR_OPENFDA_SEARCH_URL +
     variant +
     "&limit=1";
   const response = await fetch(query);
   const data = await response.json();
   return data;
 };
+
+///////////////// function to fetch product only on NDC alone
+// const fetchProductNDC = async (ndc) => {
+//   ////// remove all other characters and placing only numbers in the string
+//   ndc = ndc.replace(/\D/g, "");
+//   console.log(ndc);
+
+
 const fetchData = async (NDC) => {
   var ndcVariant1 = NDC.slice(0, 5) + "-" + NDC.slice(5, 8);
   var ndcVariant2 = NDC.slice(0, 5) + "-" + NDC.slice(5, 9);
@@ -119,15 +137,54 @@ const Home = () => {
   const [continousScanningInput, setContinousScanningInput] = useState('');
   const [account, setAccount] = useState('');
   const [wholesaler, setWholesaler] = useState('');
+  const [openSlide, setOpenSlide] = React.useState(false);
+  const [lotState, setLot] = React.useState('');
+  const [expState, setExp] = React.useState('');
+  const [loading, setReportLoading] = React.useState(false);
+  const [success, setReportSuccess] = React.useState(false);
+
 
   ///////////////////////////////////////////////////////
 
   /////////// redux states///////////////////////////////
   const data = useSelector((state) => state.data);
   ///////////////////////////////////////////////////////
-
+  const timer = React.useRef();
   const dispatch = useDispatch();
   const barcodeInputRef = useRef(null);
+
+
+  //////// slide props and transitions///////////////////////////////
+  const Transition = React.forwardRef(function Transition(props, ref) {
+    return <Slide direction="up" ref={ref} {...props} />;
+  });
+  ////////////////////////////////////////////////////////////////////
+
+
+  /////////// function to set export button state //////////////////////
+  const buttonSx = {
+    ...(success && {
+      bgcolor: green[500],
+      '&:hover': {
+        bgcolor: green[700],
+      },
+    }),
+  };
+
+  useEffect(() => {
+    return () => {
+      clearTimeout(timer.current);
+    };
+  }, []);
+
+  const handleExportReportButtonClick = () => {
+    if (!loading) {
+      setReportSuccess(false);
+      setReportLoading(true);
+      ExportToReportAPI();
+    }
+  };
+  /////////////////////////////////////////////////////////////////////
 
 
   // console.log(data);
@@ -150,7 +207,27 @@ const Home = () => {
     var exp = "";
     var mg = "";
     // var qt = 0
-    var b = barcodeValue.split("(");
+    // counting all the integers in the given input 
+    var count = (barcodeValue.match(/\d/g) || []).length;
+    // console.log(count)
+    if(count >0 && count < 11) {
+      NDC = barcodeValue.match(/\d/g);
+      NDC = NDC.join("");
+      const lotInput = window.prompt("Enter Lot Number:", "");
+      lot = lotInput;
+      const expInput = window.prompt("Enter Expiry Date(MM/YY/DD):", "");
+      exp = expInput;
+
+
+      // const window.prompt()
+      // setOpenSlide(true);
+      // lot = lotState;
+      // exp = expState;
+    }
+    else
+    {
+      var b = barcodeValue.split("(");
+    
     for (let index = 1; index < b.length; index++) {
       let bb = b[index].split(")");
       if (bb[0] === "01") {
@@ -163,6 +240,8 @@ const Home = () => {
         lot = bb[1];
       }
     }
+  }
+    if(lot !== "" && exp !== ""){
     const quantityInput = window.prompt("Enter Quantity:", "1");
     const quantity = parseInt(quantityInput, 10);
     if (!isNaN(quantity) && quantity > 0) {
@@ -179,6 +258,8 @@ const Home = () => {
           createData(NDC, man, med, lot, exp, mg, quantity),
         ]);
         dispatch(addEntry(createData(NDC, man, med, lot, exp, mg, quantity)));
+        setReportSuccess(false);
+        setReportLoading(false);
         console.log("dispatched entry");
       } catch (err) {
         alert("Please enter a valid code");
@@ -187,7 +268,7 @@ const Home = () => {
     } else {
       console.log("Please enter a valid quantity");
     }
-
+  }
     // const query = 'https://api.fda.gov/drug/ndc.json?search=product_ndc:'+NDC+'&limit=1';
 
     // clearing search bar input after sending the data
@@ -257,16 +338,20 @@ const Home = () => {
 
 
   const ExportToExcelAPI = async () => {
+    if(account===null || wholesalers===null || account==="" || wholesaler===""){
+      alert("Please select account and wholesaler")
+      return
+    } 
     // console.log(rowsFinal)
       setChecked((prev) => true);
-
+    var fileName = "invoice.xlsx";
     var dataObj = {};
     dataObj["data"] = rowsFinal;
     dataObj = JSON.stringify(dataObj);
     var acc = accounts[account];
     var whole = wholesalers[wholesaler];
     try {
-      await fetch("http://localhost:105/extodm/invoice.xlsx", {
+      await fetch(process.env.REACT_APP_QR_BACKEND_URL+"/extodm/"+fileName, {
         method: "POST",
         body: JSON.stringify({
           data: data['data'],
@@ -286,47 +371,86 @@ const Home = () => {
     setTimeout(() => {
       setChecked((prev) => false);
     }, 1000);
+
+    var anchor=document.createElement('a');
+    	anchor.setAttribute('href','/Users/vamsi/Desktop/QuickInventoryManagement-main/docs/'+fileName);
+    	anchor.setAttribute('download','');
+    	document.body.appendChild(anchor);
+    	anchor.click();
+    	anchor.parentNode.removeChild(anchor);
+  ;
   };
+
+  const ExportToReportAPI = async () => {
+    var dataObj = {};
+    dataObj["data"] = rowsFinal;
+    dataObj = JSON.stringify(dataObj);
+    try{
+      await fetch(process.env.REACT_APP_QR_BACKEND_URL+"/extoreport/", {
+        method: "POST",
+        body: dataObj,
+        headers: {
+          "Content-type": "application/json; charset=UTF-8",
+        },
+      })
+        .then((response) => response.json())
+        .then((json) => console.log(json));
+    }
+    catch(err){
+      console.log(err);
+    }
+    timer.current = window.setTimeout(() => {
+      setReportSuccess(true);
+      setReportLoading(false);
+    }, 2000);
+    
+  }
+
 
   return (
     <div className="App">
       <Box
-      
-        component="form"
-        onSubmit={handleFormSubmit}
-        noValidate
-        autoComplete="off"
-      >
-        
+      component="form"
+      onSubmit={handleFormSubmit}
+      noValidate
+      autoComplete="off"
+      sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px' }}
+    >
       <TextField
-          id="barcodeInput"
-          // ref = {barcodeInputRef}
-          name="barcodeInput"
-          label="Click here and scan"
-          variant="outlined"
-          // value={barcodeInput}
-          // type="text"
-          // class = 'barInput'
-          // onChange={(e) => setBarcodeInput(e.target.value)}
-          // style={{ position: 'absolute', top: 0, left: 0, 
-          // visibility: 'hidden' 
-        // }}
-        />
-      
-        {/* ternary operator to switch between two components */}
-        {/* {!scanChecked ? <CircularProgress size="lg" determinate value={100}
-        onClick={handleClickScan}
+        id="barcodeInput"
+        name="barcodeInput"
+        label="Click here to enter NDC or Scan the 2d barcode"
+        variant="outlined"
+        style={{ width: "500px" }}
+      />
+
+      {/* Export button aligned to the right */}
+      <Box sx={{ m: 1, position: 'relative' }}>
+        <Button
+          variant="contained"
+          sx={buttonSx}
+          disabled={loading}
+          onClick={handleExportReportButtonClick}
         >
-        Scan
-      </CircularProgress> : <CircularProgress size="lg" 
-      onClick={() => {
-        setScanChecked(false)
-      }
-      }
-      >
-        Stop
-      </CircularProgress>} */}
+          {success ? <CheckIcon /> : 'Export Report'}
+        </Button>
+        {loading && (
+          <CircularProgress
+            
+            sx={{
+              color: green[500],
+              width: 40,
+              height: 40,
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              marginTop: '-12px',
+              marginLeft: '-12px',
+            }}
+          />
+        )}
       </Box>
+    </Box>
       <TableContainer component={Paper}>
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
           <TableHead>
@@ -424,21 +548,6 @@ const Home = () => {
         </Table>
       </TableContainer>
 
-      <Stack>
-        <Button
-          variant="contained"
-          color="success"
-          onClick={() => {
-            // console.log(rowsFinal)
-            ExportToExcelAPI();
-          }}
-        >
-          Export
-        </Button>
-      </Stack>
-      <Slide direction="up" in={checked} mountOnEnter unmountOnExit>
-        {icon}
-      </Slide>
       <FormControl 
       style={{
         marginTop: '10px',
@@ -452,6 +561,9 @@ const Home = () => {
           label="Account"
           onChange={handleChangeAccount}
           onLoad={()=>{
+          }}
+          style={{
+            width: '200px',
           }}
         >
           {Object.keys(accounts).map((e, v)=> <MenuItem value={e}>{e}</MenuItem>)}
@@ -469,10 +581,40 @@ const Home = () => {
           value={wholesaler}
           label="wholesaler"
           onChange={handleChangeWholesaler}
+          style={{
+            width: '200px',
+          }}
         >
           {Object.keys(wholesalers).map((e, v)=> <MenuItem value={e}>{e}</MenuItem>)}
         </Select>
       </FormControl>
+      <Stack 
+        style={{
+          marginTop: '50px',
+          width: '100%',
+          alignContent: 'center',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+      >
+        <Button
+          variant="contained"
+          color="success"
+          onClick={() => {
+            // console.log(rowsFinal)
+            ExportToExcelAPI();
+          }}
+          style={{
+            width: '200px',
+          }}
+
+        >
+          Export
+        </Button>
+      </Stack>
+      <Slide direction="up" in={checked} mountOnEnter unmountOnExit>
+        {icon}
+      </Slide>
     </div>
   );
 };
