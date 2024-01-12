@@ -13,6 +13,7 @@ import Button from "@mui/material/Button";
 import axios from "axios";
 import { useSelector, useDispatch } from "react-redux";
 import { addEntry, removeEntry, editEntry } from "../reducers/dataSlice";
+import { addFullEntry } from "../reducers/fullDataSlice";
 // import Grow from '@mui/material/Grow';
 import Slide from '@mui/material/Slide';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -28,14 +29,20 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import { green } from '@mui/material/colors';
+import Accordion from '@mui/material/Accordion';
+import AccordionActions from '@mui/material/AccordionActions';
+import AccordionSummary from '@mui/material/AccordionSummary';
+import AccordionDetails from '@mui/material/AccordionDetails';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Fab from '@mui/material/Fab';
 import CheckIcon from '@mui/icons-material/Check';
+import ModalComponent from "./miniComponents/modal";
 // import Slide from '@mui/material/Slide';
 // const ExportToExcel = require('./functions/exportToExcel.js');
 // import { Result } from 'aws-cdk-lib/aws-stepfunctions';
 //////// function to convert data to json format
-const createData = (NDC, Manufacturer, Medicine, Lot, Expiry, mg, QTY) => {
-  return { NDC, Manufacturer, Medicine, Lot, Expiry, mg, QTY };
+const createData = (NDC, Manufacturer, Medicine, Lot, Expiry, mg, QTY, dsg, desc) => {
+  return { NDC, Manufacturer, Medicine, Lot, Expiry, mg, QTY , dsg, desc};
 };
 
 const rows = [
@@ -142,12 +149,15 @@ const Home = () => {
   const [expState, setExp] = React.useState('');
   const [loading, setReportLoading] = React.useState(false);
   const [success, setReportSuccess] = React.useState(false);
+  const [medicineInfo, setMedicineInfo] = React.useState({});
 
 
   ///////////////////////////////////////////////////////
 
   /////////// redux states///////////////////////////////
   const data = useSelector((state) => state.data);
+  const fullData = useSelector(state=>state.fullData)
+  
   ///////////////////////////////////////////////////////
   const timer = React.useRef();
   const dispatch = useDispatch();
@@ -183,6 +193,8 @@ const Home = () => {
       setReportLoading(true);
       ExportToReportAPI();
     }
+    console.log(fullData)  
+    
   };
   /////////////////////////////////////////////////////////////////////
 
@@ -196,8 +208,6 @@ const Home = () => {
       console.log("Scanned Barcode:", barcodeInput);
     }
     console.log(`Entered barcode: ${barcodeValue}`);
-    // rows.push(createData('2345678901', 'MediCare', 'Antipyretic', 'E97531', '2023-09-05', '100mg', 120))
-    // console.log(rows)
 
     /////// converting barcode value to the original values
     var NDC = "";
@@ -206,6 +216,7 @@ const Home = () => {
     var lot = "";
     var exp = "";
     var mg = "";
+    var dsg = "";
     // var qt = 0
     // counting all the integers in the given input 
     var count = (barcodeValue.match(/\d/g) || []).length;
@@ -247,7 +258,18 @@ const Home = () => {
     if (!isNaN(quantity) && quantity > 0) {
       try {
         var res = await fetchData(NDC);
-
+        // matching NDC last two digits with the packaging
+        var packaging = res['results'][0].packaging
+        packaging.forEach(element => {
+          if(element['package_ndc'].split('-')[2]==NDC.slice(-2)){
+            res['results'][0].description = element['description']
+          }
+        });
+        dispatch(addFullEntry(res["results"][0]));
+        
+        // console the redux results 
+        var desc = res["results"][0].description;
+        dsg = res['results'][0].dosage_form;
         man = res["results"][0].labeler_name;
         med = res["results"][0].brand_name;
         mg = res["results"][0].active_ingredients[0].strength;
@@ -255,12 +277,14 @@ const Home = () => {
         // console.log(man)
         setRows((prevRows) => [
           ...prevRows,
-          createData(NDC, man, med, lot, exp, mg, quantity),
+          createData(NDC, man, med, lot, exp, mg, quantity, dsg, desc),
         ]);
-        dispatch(addEntry(createData(NDC, man, med, lot, exp, mg, quantity)));
+        dispatch(addEntry(createData(NDC, man, med, lot, exp, mg, quantity, dsg, desc)));
         setReportSuccess(false);
         setReportLoading(false);
         console.log("dispatched entry");
+        
+
       } catch (err) {
         alert("Please enter a valid code");
         console.log(err);
@@ -280,13 +304,7 @@ const Home = () => {
   };
 
   /////// function to handle scan button clicked 
-  const handleClickScan = () => {
-    setScanChecked(true);
-    if (barcodeInputRef.current) {
-      barcodeInputRef.current.click();
-      barcodeInputRef.current.focus();
-    }
-  };
+
 
   const handleChangeAccount = (event) => {
     setAccount(event.target.value);
@@ -295,45 +313,6 @@ const Home = () => {
   const handleChangeWholesaler = (event) => {
     setWholesaler(event.target.value);
   }
-
-  ////////////// function to get input even without input being entered
-  // document.addEventListener("keypress", function(e) {
-  //   if (e.target.tagName !== "INPUT") {
-  //     var input = document.querySelector(".barInput");
-  //     input.focus();
-  //     input.value = e.key;
-  //     e.preventDefault();
-  //   }
-  //   // console log the input captured and appending to continousScaningInput state
-  //   console.log(input.value);
-  //   setBarcodeInput((prev) => prev + e.key);
-  //   // console.log(barcodeInput)
-    
-  //   // setContinousScanningInput((prev) => prev + e.key);
-  //   // console.log(continousScanningInput)
-  // });
-
-
-  // useEffect(() => {
-  //   const handleKeyPress = (e) => {
-
-  //     if (e.target.tagName !== 'INPUT' && barcodeInputRef.current) {
-  //       barcodeInputRef.current.focus();
-  //       barcodeInputRef.current.value = e.key;
-  //       e.preventDefault();
-  //       setBarcodeInput((prev) => prev + e.key);
-  //       console.log(barcodeInput) 
-
-  //     }
-  //   };
-
-  //   document.addEventListener('keypress', handleKeyPress);
-  //   console.log(barcodeInput)
-  //   return () => {
-  //     document.removeEventListener('keypress', handleKeyPress);
-  //   };
-    
-  // }, []);
 
 
 
@@ -472,11 +451,31 @@ const Home = () => {
                 key={row.NDC}
                 sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
               >
+                
                 <TableCell component="th" scope="row">
                   {row.NDC}
                 </TableCell>
                 <TableCell align="left">{row.Manufacturer}</TableCell>
-                <TableCell align="left">{row.Medicine}</TableCell>
+                <TableCell align="left"
+                onClick={()=>{
+                  var thisMedicine = {};
+                  
+                  fullData['fullData'].forEach(element => {
+                  
+                    if(element['product_ndc'].split('-')
+                    .join('')
+                    ===row.NDC.slice(0, row.NDC.length-2)){
+                      thisMedicine = element;
+                    }
+                  });
+                  if (!Object.isExtensible(thisMedicine)) {
+                    thisMedicine = { ...thisMedicine }; // Create a new object that is extensible
+                  }
+                  thisMedicine['status'] = true; // Add the property
+                  
+                  setMedicineInfo(thisMedicine);
+                }}
+                >{row.Medicine}</TableCell>
                 <TableCell align="left">{row.Lot}</TableCell>
                 <TableCell align="left">{row.Expiry}</TableCell>
                 <TableCell align="left">{row.mg}</TableCell>
@@ -615,6 +614,12 @@ const Home = () => {
       <Slide direction="up" in={checked} mountOnEnter unmountOnExit>
         {icon}
       </Slide>
+      <ModalComponent openMedicineInfo={medicineInfo} 
+      handleMedicineInfoClose={()=>{
+        medicineInfo.status = false;
+        setMedicineInfo(medicineInfo);
+      }}
+      />
     </div>
   );
 };

@@ -26,5 +26,6 @@ const dataSlice = createSlice( {
     }
 })
 
+
 export const { addEntry, removeEntry, editEntry } = dataSlice.actions;
 export default dataSlice.reducer; 
