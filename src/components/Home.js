@@ -41,8 +41,8 @@ import ModalComponent from "./miniComponents/modal";
 // const ExportToExcel = require('./functions/exportToExcel.js');
 // import { Result } from 'aws-cdk-lib/aws-stepfunctions';
 //////// function to convert data to json format
-const createData = (NDC, Manufacturer, Medicine, Lot, Expiry, mg, QTY, dsg, desc) => {
-  return { NDC, Manufacturer, Medicine, Lot, Expiry, mg, QTY , dsg, desc};
+const createData = (NDC, Manufacturer, Medicine, Lot, Expiry, mg, QTY, dsg, desc, price) => {
+  return { NDC, Manufacturer, Medicine, Lot, Expiry, mg, QTY , dsg, desc, price};
 };
 
 const rows = [
@@ -94,43 +94,209 @@ const fetchData = async (NDC) => {
   }
 };
 const accounts = {
-  Parmed: {
-      name: "ParMed Pharmaceuticals",
-      companyName: "Parmed",
-      address: "5960 East Shelby Drive, Suite 100",
-      address2: " Memphis, TN 3841",
-      phone: "(800) 727-6331",
-      DEA: "xxxxxxxxxxx",
-      mail: "chris.dewitt@parmedpharm.com"
+  "Alamo Pharmacy IPBG": {
+    name: "Alamo Pharmacy IPBG",
+    DBA: "UPTMAX HEALTH CARE SERVICES INC",
+    add1: "BROWNSVILLE TX 78521-3212",
+    add2: "",
+    stateLIC: "32085",
+    stateExp: "5/31/2024",
+    DEA: "FU7640661",
+    DEAExp: "06/30/2024",
+    email: "",
+    phone: "",
+    SC: "AP",
+    authorizedClasses: "",
+    cardinalAcct: "",
+    abcAcct: "100457932"
   },
-  Cardinal: {
-      name: "Cardinal Health",
-      companyName: "Acd",
-      address: "7000 Cardinal Place",
-      address2: "Dublin, OH 43017",
-      phone: "(800) 926-3161",
-      DEA: "xxxxxxxxxxx",
-      mail: "krish@cardinal.com"}
+  "AUTREY PHARMACY 1": {
+    name: "AUTREY PHARMACY 1",
+    DBA: "BROWNSVILLE PHARMACY 1 LLC",
+    add1: "1205 CENTRAL BLVD",
+    add2: "BROWNSVILLE, TX, 78520",
+    phone: "956-548-0801",
+    fax: "956-541-5029",
+    contact: "EC",
+    DEA: "FA3704358",
+    DEAExp: "06/30/2023",
+    email: "",
+    authorizedClasses: "2, 2N, 3, 3N, 4. 5",
+    cardinalAcct: "",
+    abcAcct: "",
+    SC: "AP1"
+  },
+  "AUTREY PHARMACY 2": {
+    name: "AUTREY PHARMACY 2",
+    DBA: "BROWNSVILLE PHARMACY 2 LLC",
+    add1: "1365 E RUBEN TORRES BLVD",
+    add2: "BROWNSVILLE, TX 78521",
+    phone: "956-542-5100",
+    fax: "956-542-5103",
+    contact: "EC",
+    DEA: "FA3706895",
+    DEAExp: "06/30/2023",
+    email: "",
+    authorizedClasses: "2, 2N, 3, 3N, 4. 5",
+    cardinalAcct: "",
+    abcAcct: "",
+    SC: "AP2"
+  },
+  "AUTREY PHARMACY 3": {
+    name: "AUTREY PHARMACY 3",
+    DBA: "BROWNSVILLE PHARMACY 3 LLC",
+    add1: "800 E. ALTON GLOR BLVD, UNIT B",
+    add2: "BROWNSVILLE, TX, 78526",
+    phone: "956-525-7759",
+    fax: "956-541-5029",
+    contact: "EC",
+    DEA: "FA5030010",
+    DEAExp: "06/30/2023",
+    email: "",
+    authorizedClasses: "2, 2N, 3, 3N, 4. 5",
+    cardinalAcct: "",
+    abcAcct: "",
+    SC: "AP3"
+  },
+  "AUTREY PHARMACY 4": {
+    name: "AUTREY PHARMACY 4",
+    DBA: "BROWNSVILLE PHARMACY 4 LLC",
+    add1: "3503 BOCA CHICA BLVD, SUITE 1",
+    add2: "BROWNSVILLE, TX, 78521",
+    phone: "956-621-1000",
+    fax: "956-541-5029",
+    contact: "EC",
+    DEA: "FA6707511",
+    DEAExp: "06/30/2023",
+    email: "",
+    authorizedClasses: "2, 2N, 3, 3N, 4. 5",
+    cardinalAcct: "",
+    abcAcct: "",
+    SC: "AP4"
+  },
+  "FRY’S PRESCRIPTION PHARMACY": {
+    name: "FRY’S PRESCRIPTION PHARMACY",
+    DBA: "FRY’S PRESCRIPTION PHARMACY",
+    add1: "311 N SAM HOUSTON BLVD",
+    add2: "SAN BENITO, TX 78586",
+    phone: "956-399-2453",
+    fax: "956-542-5103",
+    contact: "EC",
+    DEA: "FF5770842",
+    DEAExp: "09/30/2023",
+    email: "",
+    authorizedClasses: "2, 2N, 3, 3N, 4. 5",
+    cardinalAcct: "",
+    abcAcct: "",
+    SC: "FP"
+  },
+  "HAVERSTRAW DRUGS LLC": {
+    name: "HAVERSTRAW DRUGS LLC",
+    DBA: "HAVERSTRAW DRUGS LLC",
+    add1: "2 MAIN STREET",
+    add2: "HAVERSTRAW, NY, 10927",
+    phone: "845-553-9900",
+    fax: "845-553-9919",
+    contact: "Denise",
+    DEA: "FH4214867",
+    DEAExp: "10/31/2023",
+    email: "",
+    authorizedClasses: "2, 2N, 3, 3N, 4. 5",
+    cardinalAcct: "",
+    abcAcct: "",
+    SC: "HD"
+  },
+  "HARLINGEN PHARMACY": {
+    name: "HARLINGEN PHARMACY",
+    DBA: "HARLINGEN PHARMACY LLC",
+    add1: "1616 ED CAREY DR",
+    add2: "HARLINGEN, TX, 78550",
+    phone: "956-230-3200",
+    fax: "956-542-5103",
+    contact: "EC",
+    DEA: "FH4468799",
+    DEAExp: "10/31/2023",
+    email: "",
+    authorizedClasses: "2, 2N, 3, 3N, 4. 5",
+    cardinalAcct: "",
+    abcAcct: "",
+    SC: "HP"
+  },
+  "JNR PHARMACY BREWSTER INC": {
+    name: "JNR PHARMACY BREWSTER INC",
+    DBA: "JNR PHARMACY BREWSTER INC.",
+    add1: "2505 CARMEL AVENUE",
+    add2: "BREWSTER, NY, 10509",
+    phone: "845-278-8200",
+    fax: "845-278-4340",
+    contact: "Khan",
+    DEA: "FJ2598982",
+    DEAExp: "12/31/2023",
+    email: "",
+    authorizedClasses: "2, 2N, 3, 3N, 4. 5",
+    cardinalAcct: "",
+    abcAcct: "",
+    SC: "JB"
+  },
+  "LAKECARMEL INC": {
+    name: "LAKECARMEL INC",
+    DBA: "LAKECARMEL INC",
+    add1: "511 RT 52",
+    add2: "CARMEL, NY,10512",
+    phone: "845-225-4242",
+    fax: "845-225-9349",
+    contact: "Sunny",
+    DEA: "FL2197033",
+    DEAExp: "03/31/2023",
+    email: "",
+    authorizedClasses: "2, 2N, 3, 3N, 4. 5",
+    cardinalAcct: "",
+    abcAcct: "",
+    SC: "LC"
+  },
+  "LM PHARMACY": {
+    name: "LM PHARMACY",
+    DBA: "LM PHARMACY",
+    add1: "900W SAM HOUSTON BLVD STE 3",
+    add2: "PHARR, TX 78577",
+    phone: "201-595-1234",
+    fax: "813-950-6338",
+    contact: "ADI",
+    DEA: "BL5101009",
+    DEAExp: "08/31/2023",
+    email: "",
+    authorizedClasses: "2, 2N, 3, 3N, 4. 5",
+    cardinalAcct: "",
+    abcAcct: "",
+    SC: "LP"
+  }
 }
 
-const wholesalers = {
-  Wholesaler1: {
-      name: "Proud Pharmaceuticals",
-      companyName: "Testing",
-      address: "5960 East Shelby Drive, Suite 100",
-      address2: " Memphis, TN 3841",
-      phone: "(800) 727-6331",
-      DEA: "xxxxxxxxxxx",
-      mail: "chris.dewitt@parmedpharm.com"
+const wholesalers =  {
+  "KINARY": {
+    name: "KINARY",
+    add1: "152.35 TENTH AVE",
+    add2: "WHITESTONE, NY,11357",
+    accountNumber: "",
+    phone: "718-767-1234/ 888-527-6806",
+    DEA: "RK0416900"
   },
-  Wholesaler2: {
-      name: "Jealous Health",
-      companyName: "Testing2",
-      address: "7000 Cardinal Place",
-      address2: "Dublin, OH 43017",
-      phone: "(800) 926-3161",
-      DEA: "xxxxxxxxxxx",
-      mail: "krish@cardinal.com"}
+  "CARDINAL HEALTH": {
+    name: "CARDINAL HEALTH",
+    add1: "7052 GRAND BLVD",
+    add2: "HOUSTON, TX, 77054",
+    accountNumber: "318194",
+    phone: "713-764-5914",
+    DEA: ""
+  },
+  "AMERISOURCEBERGEN DRUG CORPORATION": {
+    name: "AMERISOURCEBERGEN DRUG CORPORATION",
+    add1: "108 ROUTE 17K SUITE 1",
+    add2: "NEWBURGH. NY, 12550-5008",
+    accountNumber: "100199545",
+    phone: "844-222-2273",
+    DEA: "RA0522056"
+  }
 }
 
 
@@ -255,6 +421,9 @@ const Home = () => {
     if(lot !== "" && exp !== ""){
     const quantityInput = window.prompt("Enter Quantity:", "1");
     const quantity = parseInt(quantityInput, 10);
+    const priceInput = window.prompt("Enter Price:", "1");
+    const price = parseFloat(priceInput, 10);
+
     if (!isNaN(quantity) && quantity > 0) {
       try {
         var res = await fetchData(NDC);
@@ -277,9 +446,9 @@ const Home = () => {
         // console.log(man)
         setRows((prevRows) => [
           ...prevRows,
-          createData(NDC, man, med, lot, exp, mg, quantity, dsg, desc),
+          createData(NDC, man, med, lot, exp, mg, quantity, dsg, desc, price),
         ]);
-        dispatch(addEntry(createData(NDC, man, med, lot, exp, mg, quantity, dsg, desc)));
+        dispatch(addEntry(createData(NDC, man, med, lot, exp, mg, quantity, dsg, desc, price)));
         setReportSuccess(false);
         setReportLoading(false);
         console.log("dispatched entry");
@@ -441,6 +610,8 @@ const Home = () => {
               <TableCell align="left">Expiry</TableCell>
               <TableCell align="left">mg</TableCell>
               <TableCell align="left">QTY</TableCell>
+              <TableCell align="left">Price {"(usd)"}</TableCell>
+              <TableCell align="left">Total Price {"(usd)"}</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -480,6 +651,9 @@ const Home = () => {
                 <TableCell align="left">{row.Expiry}</TableCell>
                 <TableCell align="left">{row.mg}</TableCell>
                 <TableCell align="left">{row.QTY}</TableCell>
+                <TableCell align="left">{row.price}</TableCell>
+                <TableCell align="left">{(parseFloat(row.price)*parseFloat(row.QTY)).toFixed(2)}</TableCell>
+
                 {/* button to remote the entry */}
                 <TableCell align="left">
                   <Stack>
@@ -503,7 +677,11 @@ const Home = () => {
                           const newValue = window.prompt(
                             "Enter new quantity: "
                           );
+                          const newPrice = window.prompt(
+                            "Enter new price: "
+                          );
                           const newQuantity = parseInt(newValue, 10);
+                          const newPriceValue = parseFloat(newPrice, 10);
                           if (!isNaN(newQuantity) && newQuantity > 0) {
                             // row.QTY = newQuantity;
                             // setRows([...rowsFinal]);
@@ -514,8 +692,15 @@ const Home = () => {
                             setRows(updatedRows);
                             dispatch(editEntry(updatedRows[index])); // Assuming editEntry expects an updated row as an argument
                             console.log(data);
-                        }}
-
+                        }
+                        if (!isNaN(newPriceValue) && newPriceValue > 0) {
+                          const updatedRows = [...rowsFinal]; // Create a copy of the array
+                          updatedRows[index] = { ...updatedRows[index], price: newPriceValue }; // Create a copy of the object with updated quantity
+                          setRows(updatedRows);
+                          dispatch(editEntry(updatedRows[index])); // Assuming editEntry expects an updated row as an argument
+                          console.log(data);
+                        }
+                      }
                       }}
                     >
                       Edit
