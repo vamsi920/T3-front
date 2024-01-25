@@ -7,40 +7,27 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import Stack from "@mui/material/Stack";
 import Button from "@mui/material/Button";
-import axios from "axios";
 import { useSelector, useDispatch } from "react-redux";
 import { addEntry, removeEntry, editEntry } from "../reducers/dataSlice";
 import { addFullEntry } from "../reducers/fullDataSlice";
-// import Grow from '@mui/material/Grow';
 import Slide from "@mui/material/Slide";
-import FormControlLabel from "@mui/material/FormControlLabel";
 import icon from "./miniComponents/alertbox";
 import CircularProgress from "@mui/joy/CircularProgress";
 import Select from "@mui/material/Select";
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogTitle from "@mui/material/DialogTitle";
 import { green } from "@mui/material/colors";
-import Accordion from "@mui/material/Accordion";
-import AccordionActions from "@mui/material/AccordionActions";
-import AccordionSummary from "@mui/material/AccordionSummary";
-import AccordionDetails from "@mui/material/AccordionDetails";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import Fab from "@mui/material/Fab";
 import CheckIcon from "@mui/icons-material/Check";
 import ModalComponent from "./miniComponents/modal";
 import getActiveBox from "../functions/getActiveBox";
-// import Slide from '@mui/material/Slide';
-// const ExportToExcel = require('./functions/exportToExcel.js');
-// import { Result } from 'aws-cdk-lib/aws-stepfunctions';
+import getMedicines from "../functions/getMedicines";
+import getAccounts from "../functions/getAccounts";
+import getWholesalers from "../functions/getWholesalers";
+
 //////// function to convert data to json format
 const createData = (
   NDC,
@@ -68,10 +55,6 @@ const createData = (
   };
 };
 
-const rows = [
-  //
-  // Add more rows as needed
-];
 const fetchAndParseData = async (variant) => {
   console.log(process.env.REACT_APP_QR_OPENFDA_SEARCH_URL);
   const query =
@@ -113,230 +96,28 @@ const fetchData = async (NDC) => {
     }
   }
 };
-const accounts = {
-  "Alamo Pharmacy IPBG": {
-    name: "Alamo Pharmacy IPBG",
-    DBA: "UPTMAX HEALTH CARE SERVICES INC",
-    add1: "BROWNSVILLE TX 78521-3212",
-    add2: "",
-    stateLIC: "32085",
-    stateExp: "5/31/2024",
-    DEA: "FU7640661",
-    DEAExp: "06/30/2024",
-    email: "",
-    phone: "",
-    SC: "AP",
-    authorizedClasses: "",
-    cardinalAcct: "",
-    abcAcct: "100457932",
-  },
-  "AUTREY PHARMACY 1": {
-    name: "AUTREY PHARMACY 1",
-    DBA: "BROWNSVILLE PHARMACY 1 LLC",
-    add1: "1205 CENTRAL BLVD",
-    add2: "BROWNSVILLE, TX, 78520",
-    phone: "956-548-0801",
-    fax: "956-541-5029",
-    contact: "EC",
-    DEA: "FA3704358",
-    DEAExp: "06/30/2023",
-    email: "",
-    authorizedClasses: "2, 2N, 3, 3N, 4. 5",
-    cardinalAcct: "",
-    abcAcct: "",
-    SC: "AP1",
-  },
-  "AUTREY PHARMACY 2": {
-    name: "AUTREY PHARMACY 2",
-    DBA: "BROWNSVILLE PHARMACY 2 LLC",
-    add1: "1365 E RUBEN TORRES BLVD",
-    add2: "BROWNSVILLE, TX 78521",
-    phone: "956-542-5100",
-    fax: "956-542-5103",
-    contact: "EC",
-    DEA: "FA3706895",
-    DEAExp: "06/30/2023",
-    email: "",
-    authorizedClasses: "2, 2N, 3, 3N, 4. 5",
-    cardinalAcct: "",
-    abcAcct: "",
-    SC: "AP2",
-  },
-  "AUTREY PHARMACY 3": {
-    name: "AUTREY PHARMACY 3",
-    DBA: "BROWNSVILLE PHARMACY 3 LLC",
-    add1: "800 E. ALTON GLOR BLVD, UNIT B",
-    add2: "BROWNSVILLE, TX, 78526",
-    phone: "956-525-7759",
-    fax: "956-541-5029",
-    contact: "EC",
-    DEA: "FA5030010",
-    DEAExp: "06/30/2023",
-    email: "",
-    authorizedClasses: "2, 2N, 3, 3N, 4. 5",
-    cardinalAcct: "",
-    abcAcct: "",
-    SC: "AP3",
-  },
-  "AUTREY PHARMACY 4": {
-    name: "AUTREY PHARMACY 4",
-    DBA: "BROWNSVILLE PHARMACY 4 LLC",
-    add1: "3503 BOCA CHICA BLVD, SUITE 1",
-    add2: "BROWNSVILLE, TX, 78521",
-    phone: "956-621-1000",
-    fax: "956-541-5029",
-    contact: "EC",
-    DEA: "FA6707511",
-    DEAExp: "06/30/2023",
-    email: "",
-    authorizedClasses: "2, 2N, 3, 3N, 4. 5",
-    cardinalAcct: "",
-    abcAcct: "",
-    SC: "AP4",
-  },
-  "FRY’S PRESCRIPTION PHARMACY": {
-    name: "FRY’S PRESCRIPTION PHARMACY",
-    DBA: "FRY’S PRESCRIPTION PHARMACY",
-    add1: "311 N SAM HOUSTON BLVD",
-    add2: "SAN BENITO, TX 78586",
-    phone: "956-399-2453",
-    fax: "956-542-5103",
-    contact: "EC",
-    DEA: "FF5770842",
-    DEAExp: "09/30/2023",
-    email: "",
-    authorizedClasses: "2, 2N, 3, 3N, 4. 5",
-    cardinalAcct: "",
-    abcAcct: "",
-    SC: "FP",
-  },
-  "HAVERSTRAW DRUGS LLC": {
-    name: "HAVERSTRAW DRUGS LLC",
-    DBA: "HAVERSTRAW DRUGS LLC",
-    add1: "2 MAIN STREET",
-    add2: "HAVERSTRAW, NY, 10927",
-    phone: "845-553-9900",
-    fax: "845-553-9919",
-    contact: "Denise",
-    DEA: "FH4214867",
-    DEAExp: "10/31/2023",
-    email: "",
-    authorizedClasses: "2, 2N, 3, 3N, 4. 5",
-    cardinalAcct: "",
-    abcAcct: "",
-    SC: "HD",
-  },
-  "HARLINGEN PHARMACY": {
-    name: "HARLINGEN PHARMACY",
-    DBA: "HARLINGEN PHARMACY LLC",
-    add1: "1616 ED CAREY DR",
-    add2: "HARLINGEN, TX, 78550",
-    phone: "956-230-3200",
-    fax: "956-542-5103",
-    contact: "EC",
-    DEA: "FH4468799",
-    DEAExp: "10/31/2023",
-    email: "",
-    authorizedClasses: "2, 2N, 3, 3N, 4. 5",
-    cardinalAcct: "",
-    abcAcct: "",
-    SC: "HP",
-  },
-  "JNR PHARMACY BREWSTER INC": {
-    name: "JNR PHARMACY BREWSTER INC",
-    DBA: "JNR PHARMACY BREWSTER INC.",
-    add1: "2505 CARMEL AVENUE",
-    add2: "BREWSTER, NY, 10509",
-    phone: "845-278-8200",
-    fax: "845-278-4340",
-    contact: "Khan",
-    DEA: "FJ2598982",
-    DEAExp: "12/31/2023",
-    email: "",
-    authorizedClasses: "2, 2N, 3, 3N, 4. 5",
-    cardinalAcct: "",
-    abcAcct: "",
-    SC: "JB",
-  },
-  "LAKECARMEL INC": {
-    name: "LAKECARMEL INC",
-    DBA: "LAKECARMEL INC",
-    add1: "511 RT 52",
-    add2: "CARMEL, NY,10512",
-    phone: "845-225-4242",
-    fax: "845-225-9349",
-    contact: "Sunny",
-    DEA: "FL2197033",
-    DEAExp: "03/31/2023",
-    email: "",
-    authorizedClasses: "2, 2N, 3, 3N, 4. 5",
-    cardinalAcct: "",
-    abcAcct: "",
-    SC: "LC",
-  },
-  "LM PHARMACY": {
-    name: "LM PHARMACY",
-    DBA: "LM PHARMACY",
-    add1: "900W SAM HOUSTON BLVD STE 3",
-    add2: "PHARR, TX 78577",
-    phone: "201-595-1234",
-    fax: "813-950-6338",
-    contact: "ADI",
-    DEA: "BL5101009",
-    DEAExp: "08/31/2023",
-    email: "",
-    authorizedClasses: "2, 2N, 3, 3N, 4. 5",
-    cardinalAcct: "",
-    abcAcct: "",
-    SC: "LP",
-  },
-};
-
-const wholesalers = {
-  KINARY: {
-    name: "KINARY",
-    add1: "152.35 TENTH AVE",
-    add2: "WHITESTONE, NY,11357",
-    accountNumber: "",
-    phone: "718-767-1234/ 888-527-6806",
-    DEA: "RK0416900",
-  },
-  "CARDINAL HEALTH": {
-    name: "CARDINAL HEALTH",
-    add1: "7052 GRAND BLVD",
-    add2: "HOUSTON, TX, 77054",
-    accountNumber: "318194",
-    phone: "713-764-5914",
-    DEA: "",
-  },
-  "AMERISOURCEBERGEN DRUG CORPORATION": {
-    name: "AMERISOURCEBERGEN DRUG CORPORATION",
-    add1: "108 ROUTE 17K SUITE 1",
-    add2: "NEWBURGH. NY, 12550-5008",
-    accountNumber: "100199545",
-    phone: "844-222-2273",
-    DEA: "RA0522056",
-  },
-};
 
 const Home = () => {
   ////////// local states////////////////////////////////
-  const [rowsFinal, setRows] = useState(rows);
+  const [rowsFinal, setRows] = useState([]);
   const [checked, setChecked] = React.useState(false);
-  const [scanChecked, setScanChecked] = useState(false);
-  const [barcodeInput, setBarcodeInput] = useState("");
-  const [continousScanningInput, setContinousScanningInput] = useState("");
-  const [account, setAccount] = useState("");
-  const [wholesaler, setWholesaler] = useState("");
-  const [openSlide, setOpenSlide] = React.useState(false);
-  const [lotState, setLot] = React.useState("");
-  const [expState, setExp] = React.useState("");
+  const [scanChecked] = useState(false);
+  const [barcodeInput] = useState("");
+  // const [continousScanningInput, setContinousScanningInput] = useState("");
+  const [accountsSetted, setAccountsSetted] = useState("");
+  const [wholesalersSetted, setWholesalersSetted] = useState("");
+  // const [openSlide, setOpenSlide] = React.useState(false);
+  // const [lotState, setLot] = React.useState("");
+  // const [expState, setExp] = React.useState("");
   const [loading, setReportLoading] = React.useState(false);
   const [success, setReportSuccess] = React.useState(false);
   const [medicineInfo, setMedicineInfo] = React.useState({});
   const [activeBox, setActiveBox] = useState({});
   const [isHovered, setIsHovered] = useState(false);
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
+  const [medicinesInBox, setMedicinesInBox] = useState([]);
+  const [accounts, setAccounts] = useState({});
+  const [wholesalers, setWholesalers] = useState({});
 
   ///////////////////////////////////////////////////////
 
@@ -347,12 +128,8 @@ const Home = () => {
   ///////////////////////////////////////////////////////
   const timer = React.useRef();
   const dispatch = useDispatch();
-  const barcodeInputRef = useRef(null);
+  // const barcodeInputRef = useRef(null);
 
-  //////// slide props and transitions///////////////////////////////
-  const Transition = React.forwardRef(function Transition(props, ref) {
-    return <Slide direction="up" ref={ref} {...props} />;
-  });
   ////////////////////////////////////////////////////////////////////
 
   /////////// function to set export button state //////////////////////
@@ -368,10 +145,28 @@ const Home = () => {
   useEffect(() => {
     return async () => {
       const activeBoxData = await getActiveBox();
-      console.log(activeBoxData);
+      const accounts = await getAccounts();
+      const wholesalers = await getWholesalers();
+      console.log(accounts);
+      setAccounts(accounts);
+      setWholesalers(wholesalers);
+      console.log(wholesalers);
+      // console.log(activeBoxData);
       setActiveBox(activeBoxData);
-      // setActiveBox(activeBoxData);
+      const medicinesInBoxData = await getMedicines(activeBoxData.boxName);
+      if ("error" in medicinesInBoxData) {
+        // console.log('came here')
+        setRows([]);
+        console.log(rowsFinal.length);
+      } else {
+        console.log(medicinesInBoxData);
+        setRows(medicinesInBoxData);
+      }
 
+      // setRows(medicinesInBoxData);
+      for (let i = 0; i < medicinesInBoxData.length; i++) {
+        dispatch(addEntry(medicinesInBoxData[i]));
+      }
       clearTimeout(timer.current);
     };
   }, []);
@@ -386,6 +181,44 @@ const Home = () => {
     console.log(fullData);
   };
   /////////////////////////////////////////////////////////////////////
+
+  const insertMedicine = (mInfo) => {
+    // console.log(mInfo)
+
+    // Prepare the data to be sent in the request body
+    const data = {
+      NDC: mInfo.NDC,
+      Manufacturer: mInfo.Manufacturer,
+      Medicine: mInfo.Medicine,
+      Lot: mInfo.Lot,
+      Expiry: mInfo.Expiry,
+      mg: mInfo.mg,
+      QTY: mInfo.QTY,
+      dsg: mInfo.dsg,
+      desc: mInfo.desc,
+      price: mInfo.price,
+    };
+
+    // Make the POST request
+    fetch(process.env.REACT_APP_QR_BACKEND_URL + "/addMedicineToBox", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    })
+      .then((response) => response.json())
+      .then((result) => {
+        // Handle the response from the server and return the response
+        console.log(result);
+        setRows(result); // Set the rows state with the received data
+        // return result;
+      })
+      .catch((error) => {
+        // Handle any errors that occurred during the request
+        console.error(error);
+      });
+  };
 
   // console.log(data);
   const handleFormSubmit = async (event) => {
@@ -449,7 +282,7 @@ const Home = () => {
           // matching NDC last two digits with the packaging
           var packaging = res["results"][0].packaging;
           packaging.forEach((element) => {
-            if (element["package_ndc"].split("-")[2] == NDC.slice(-2)) {
+            if (element["package_ndc"].split("-")[2] === NDC.slice(-2)) {
               res["results"][0].description = element["description"];
             }
           });
@@ -461,28 +294,31 @@ const Home = () => {
           man = res["results"][0].labeler_name;
           med = res["results"][0].brand_name;
           mg = res["results"][0].active_ingredients[0].strength;
-
-          // console.log(man)
-          setRows((prevRows) => [
-            ...prevRows,
-            createData(NDC, man, med, lot, exp, mg, quantity, dsg, desc, price),
-          ]);
-          dispatch(
-            addEntry(
-              createData(
-                NDC,
-                man,
-                med,
-                lot,
-                exp,
-                mg,
-                quantity,
-                dsg,
-                desc,
-                price
-              )
-            )
+          // console.log(res["results"][0].medicineID)
+          var medicineData = createData(
+            NDC,
+            man,
+            med,
+            lot,
+            exp,
+            mg,
+            quantity,
+            dsg,
+            desc,
+            price
           );
+
+          insertMedicine(medicineData);
+          // console.log(rowsFinal)
+          // setRows((prevRows) => {
+          //   if (prevRows.error === 'No medicines found for the given box name') {
+          //     return [medicineData];
+          //   } else {
+          //     return [...prevRows, medicineData];
+          //   }
+          // });
+
+          dispatch(addEntry(medicineData));
           setReportSuccess(false);
           setReportLoading(false);
           console.log("dispatched entry");
@@ -502,22 +338,123 @@ const Home = () => {
     // console.log(data);
   };
 
+  const handleEditMedicineEntry = (row) => {
+    var index = -1;
+    for (let i = 0; i < rowsFinal.length; i++) {
+      if (rowsFinal[i].NDC === row.NDC) {
+        index = i;
+        break;
+      }
+    }
+    if (index !== -1) {
+      const newValue = window.prompt("Enter new quantity: ");
+      const newPrice = window.prompt("Enter new price: ");
+      const newQuantity = parseInt(newValue, 10);
+      const newPriceValue = parseFloat(newPrice, 10);
+      if (!isNaN(newQuantity) && newQuantity > 0) {
+        // const updatedRows = [...rowsFinal]; // Create a copy of the array
+        // updatedRows[index] = {
+        //   ...updatedRows[index],
+        //   QTY: newQuantity,
+        // }; // Create a copy of the object with updated quantity
+        // setRows(updatedRows);
+        // dispatch(editEntry(updatedRows[index])); // Assuming editEntry expects an updated row as an argument
+        // console.log(data);
+        fetch(process.env.REACT_APP_QR_BACKEND_URL + "/editMedicineInBox", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            medicineID: row.medicineID,
+            boxName: activeBox.boxName,
+            QTY: newQuantity,
+            price: newPriceValue,
+          }),
+        })
+          .then((response) => response.json())
+          .then((result) => {
+            // Handle the response from the server
+            console.log(result);
+            if (result.error) {
+              setRows([]);
+            } else {
+              setRows(result);
+            }
+          })
+          .catch((error) => {
+            // Handle any errors that occurred during the request
+            console.error(error);
+          });
+      }
+      if (!isNaN(newPriceValue) && newPriceValue > 0) {
+        const updatedRows = [...rowsFinal]; // Create a copy of the array
+        updatedRows[index] = {
+          ...updatedRows[index],
+          price: newPriceValue,
+        }; // Create a copy of the object with updated quantity
+        setRows(updatedRows);
+        dispatch(editEntry(updatedRows[index])); // Assuming editEntry expects an updated row as an argument
+        console.log(data);
+      }
+    }
+  };
   /////// function to handle scan button clicked
 
   const handleChangeAccount = (event) => {
-    setAccount(event.target.value);
+    setAccountsSetted(event.target.value);
+    fetch(process.env.REACT_APP_QR_BACKEND_URL+'/setAccountToBox', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        boxId: activeBox.boxId,
+        account: event.target.value
+      })
+    })
+      .then(response => response.json())
+      .then(result => {
+        // Handle the response from the server
+        console.log(result);
+      })
+      .catch(error => {
+        // Handle any errors that occurred during the request
+        console.error(error);
+      });
   };
+  
 
   const handleChangeWholesaler = (event) => {
-    setWholesaler(event.target.value);
+    setWholesalersSetted(event.target.value);
+    fetch(process.env.REACT_APP_QR_BACKEND_URL+'/setWholesalerToBox', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        boxId: activeBox.boxId,
+        wholesaler: event.target.value
+      })
+    })
+      .then(response => response.json())
+      .then(result => {
+        // Handle the response from the server
+        console.log(result);
+      })
+      .catch(error => {
+        // Handle any errors that occurred during the request
+        console.error(error);
+
+      });
   };
 
   const ExportToExcelAPI = async () => {
     if (
-      account === null ||
-      wholesalers === null ||
-      account === "" ||
-      wholesaler === ""
+      accountsSetted === null ||
+      wholesalersSetted === null ||
+      accountsSetted === "" ||
+      wholesalersSetted === ""
     ) {
       alert("Please select account and wholesaler");
       return;
@@ -528,8 +465,8 @@ const Home = () => {
     var dataObj = {};
     dataObj["data"] = rowsFinal;
     dataObj = JSON.stringify(dataObj);
-    var acc = accounts[account];
-    var whole = wholesalers[wholesaler];
+    var acc = accounts[accountsSetted];
+    var whole = wholesalers[wholesalersSetted];
     try {
       await fetch(
         process.env.REACT_APP_QR_BACKEND_URL + "/extodm/" + fileName,
@@ -606,8 +543,48 @@ const Home = () => {
 
   const handleConfirmationYes = () => {
     console.log("closed");
+    if(accountsSetted === null || accountsSetted.length === 0 || wholesalersSetted === null || wholesalersSetted.length === 0 || accountsSetted==="" || wholesalersSetted===""){
+      alert("Please select account and wholesaler");
+      return;
+    }
+    
+
+    try {
+      fetch(process.env.REACT_APP_QR_BACKEND_URL + "/closeBox", {
+        method: "POST",
+        body: JSON.stringify({
+          boxId: activeBox.boxId,
+          account: accountsSetted,
+          wholesaler: wholesalersSetted,
+        }),
+        headers: {
+          "Content-type": "application/json; charset=UTF-8",
+        },
+      })
+        .then((response) => response.json())
+        .then((json) => {
+          setRows([]);
+          console.log(json)});
+    } catch (err) {
+      console.log(err);
+    }
     setIsConfirmationOpen(false);
     setActiveBox({});
+  };
+
+  const handleCreateBox = async () => {
+    try {
+      await fetch(process.env.REACT_APP_QR_BACKEND_URL + "/createBox", {
+        method: "GET",
+      })
+        .then((response) => response.json())
+        .then((json) => {
+          console.log(json);
+          setActiveBox(json); // Set the active box using the response
+        });
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   return (
@@ -644,27 +621,25 @@ const Home = () => {
             onMouseLeave={handleBoxLeave}
           >
             {activeBox === undefined || activeBox.boxName === undefined ? (
-              <Button onClick={() => console.log("created")}>Create Box</Button>
+              <Button onClick={handleCreateBox}>Create Box</Button>
             ) : (
-             
-                <div>
-                  <p>{"Active Box: "+activeBox.boxName}</p>
-                  {isHovered && (
-                    <div>
-                      <Button onClick={handleConfirmationOpen}>
-                        Close the box
-                      </Button>
-                      {isConfirmationOpen && (
-                        <div>
-                          <p>Are you sure you want to close the box?</p>
-                          <Button onClick={handleConfirmationYes}>Yes</Button>
-                          <Button onClick={handleConfirmationClose}>No</Button>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              
+              <div>
+                <p>{"Active Box: " + activeBox.boxName}</p>
+                {isHovered && (
+                  <div>
+                    <Button onClick={handleConfirmationOpen}>
+                      Close the box
+                    </Button>
+                    {isConfirmationOpen && (
+                      <div>
+                        <p>Are you sure you want to close the box?</p>
+                        <Button onClick={handleConfirmationYes}>Yes</Button>
+                        <Button onClick={handleConfirmationClose}>No</Button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             )}
           </Box>
         </div>
@@ -712,122 +687,122 @@ const Home = () => {
           </TableHead>
           <TableBody>
             {/* {rowsFinal.map((row) => ( */}
-            {data["data"].map((row) => (
+            {rowsFinal.length === 0 ? (
               <TableRow
-                key={row.NDC}
+                key="1"
                 sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
               >
                 <TableCell component="th" scope="row">
-                  {row.NDC}
-                </TableCell>
-                <TableCell align="left">{row.Manufacturer}</TableCell>
-                <TableCell
-                  align="left"
-                  onClick={() => {
-                    var thisMedicine = {};
-
-                    fullData["fullData"].forEach((element) => {
-                      if (
-                        element["product_ndc"].split("-").join("") ===
-                        row.NDC.slice(0, row.NDC.length - 2)
-                      ) {
-                        thisMedicine = element;
-                      }
-                    });
-                    if (!Object.isExtensible(thisMedicine)) {
-                      thisMedicine = { ...thisMedicine }; // Create a new object that is extensible
-                    }
-                    thisMedicine["status"] = true; // Add the property
-
-                    setMedicineInfo(thisMedicine);
-                  }}
-                >
-                  {row.Medicine}
-                </TableCell>
-                <TableCell align="left">{row.Lot}</TableCell>
-                <TableCell align="left">{row.Expiry}</TableCell>
-                <TableCell align="left">{row.mg}</TableCell>
-                <TableCell align="left">{row.QTY}</TableCell>
-                <TableCell align="left">{row.price}</TableCell>
-                <TableCell align="left">
-                  {(parseFloat(row.price) * parseFloat(row.QTY)).toFixed(2)}
-                </TableCell>
-
-                {/* button to remote the entry */}
-                <TableCell align="left">
-                  <Stack>
-                    <Button
-                      variant="contained"
-                      color="success"
-                      onClick={() => {
-                        var index = -1;
-                        for (let i = 0; i < rowsFinal.length; i++) {
-                          if (rowsFinal[i].NDC === row.NDC) {
-                            index = i;
-                            break;
-                          }
-                        }
-                        if (index !== -1) {
-                          console.log(rowsFinal);
-                          console.log(index);
-                          console.log("came here");
-                          const newValue = window.prompt(
-                            "Enter new quantity: "
-                          );
-                          const newPrice = window.prompt("Enter new price: ");
-                          const newQuantity = parseInt(newValue, 10);
-                          const newPriceValue = parseFloat(newPrice, 10);
-                          if (!isNaN(newQuantity) && newQuantity > 0) {
-                            // row.QTY = newQuantity;
-                            // setRows([...rowsFinal]);
-                            // dispatch(editEntry(row));
-                            // console.log(data)
-                            const updatedRows = [...rowsFinal]; // Create a copy of the array
-                            updatedRows[index] = {
-                              ...updatedRows[index],
-                              QTY: newQuantity,
-                            }; // Create a copy of the object with updated quantity
-                            setRows(updatedRows);
-                            dispatch(editEntry(updatedRows[index])); // Assuming editEntry expects an updated row as an argument
-                            console.log(data);
-                          }
-                          if (!isNaN(newPriceValue) && newPriceValue > 0) {
-                            const updatedRows = [...rowsFinal]; // Create a copy of the array
-                            updatedRows[index] = {
-                              ...updatedRows[index],
-                              price: newPriceValue,
-                            }; // Create a copy of the object with updated quantity
-                            setRows(updatedRows);
-                            dispatch(editEntry(updatedRows[index])); // Assuming editEntry expects an updated row as an argument
-                            console.log(data);
-                          }
-                        }
-                      }}
-                    >
-                      Edit
-                    </Button>
-                  </Stack>
-                </TableCell>
-                <TableCell align="left">
-                  <Stack>
-                    <Button
-                      variant="contained"
-                      color="error"
-                      onClick={() => {
-                        const index = rowsFinal.indexOf(row);
-                        if (index > -1) {
-                          rowsFinal.splice(index, 1);
-                          setRows([...rowsFinal]);
-                        }
-                        dispatch(removeEntry(row.NDC));
-                      }}
-                    >
-                      Delete
-                    </Button>
-                  </Stack>
+                  {"No medicines found for the given box name"}
                 </TableCell>
               </TableRow>
-            ))}
+            ) : (
+              rowsFinal.map((row) => (
+                <TableRow
+                  key={row.NDC}
+                  sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+                >
+                  <TableCell component="th" scope="row">
+                    {row.NDC}
+                  </TableCell>
+                  <TableCell align="left">{row.Manufacturer}</TableCell>
+                  <TableCell
+                    align="left"
+                    onClick={() => {
+                      var thisMedicine = {};
+
+                      fullData["fullData"].forEach((element) => {
+                        if (
+                          element["product_ndc"].split("-").join("") ===
+                          row.NDC.slice(0, row.NDC.length - 2)
+                        ) {
+                          thisMedicine = element;
+                        }
+                      });
+                      if (!Object.isExtensible(thisMedicine)) {
+                        thisMedicine = { ...thisMedicine }; // Create a new object that is extensible
+                      }
+                      thisMedicine["status"] = true; // Add the property
+
+                      setMedicineInfo(thisMedicine);
+                    }}
+                  >
+                    {row.Medicine}
+                  </TableCell>
+                  <TableCell align="left">{row.Lot}</TableCell>
+                  <TableCell align="left">{row.Expiry}</TableCell>
+                  <TableCell align="left">{row.mg}</TableCell>
+                  <TableCell align="left">{row.QTY}</TableCell>
+                  <TableCell align="left">{row.price}</TableCell>
+                  <TableCell align="left">
+                    {(parseFloat(row.price) * parseFloat(row.QTY)).toFixed(2)}
+                  </TableCell>
+
+                  {/* button to remote the entry */}
+                  <TableCell align="left">
+                    <Stack>
+                      <Button
+                        variant="contained"
+                        color="success"
+                        onClick={() => {
+                          handleEditMedicineEntry(row);
+                        }}
+                      >
+                        Edit
+                      </Button>
+                    </Stack>
+                  </TableCell>
+                  <TableCell align="left">
+                    <Stack>
+                      <Button
+                        variant="contained"
+                        color="error"
+                        onClick={() => {
+                          console.log(row);
+                          // const index = rowsFinal.indexOf(row);
+                          // if (index > -1) {
+                          //   rowsFinal.splice(index, 1);
+                          //   setRows([...rowsFinal]);
+                          // }
+                          fetch(
+                            process.env.REACT_APP_QR_BACKEND_URL +
+                              "/deleteMedicineFromBox",
+                            {
+                              method: "POST",
+                              headers: {
+                                "Content-Type": "application/json",
+                              },
+                              body: JSON.stringify({
+                                medicineID: row.medicineID,
+                                boxName: activeBox.boxName,
+                              }),
+                            }
+                          )
+                            .then((response) => response.json())
+                            .then((result) => {
+                              // Handle the response from the server
+                              console.log(result);
+                              if (result.error) {
+                                setRows([]);
+                              } else {
+                                setRows(result);
+                              }
+                            })
+                            .catch((error) => {
+                              // Handle any errors that occurred during the request
+                              console.error(error);
+                            });
+
+                          // dispatch(removeEntry(row.NDC));
+                        }}
+                      >
+                        Delete
+                      </Button>
+                    </Stack>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </TableContainer>
@@ -841,7 +816,7 @@ const Home = () => {
         <Select
           labelId="account"
           id="account"
-          value={account}
+          value={accountsSetted}
           label="Account"
           onChange={handleChangeAccount}
           onLoad={() => {}}
@@ -850,7 +825,7 @@ const Home = () => {
           }}
         >
           {Object.keys(accounts).map((e, v) => (
-            <MenuItem value={e}>{e}</MenuItem>
+            <MenuItem value={e}>{accounts[e]['name']}</MenuItem>
           ))}
         </Select>
       </FormControl>
@@ -863,7 +838,7 @@ const Home = () => {
         <Select
           labelId="wholesaler"
           id="wholesaler"
-          value={wholesaler}
+          value={wholesalersSetted}
           label="wholesaler"
           onChange={handleChangeWholesaler}
           style={{
@@ -871,7 +846,7 @@ const Home = () => {
           }}
         >
           {Object.keys(wholesalers).map((e, v) => (
-            <MenuItem value={e}>{e}</MenuItem>
+            <MenuItem value={e}>{wholesalers[e]['name']}</MenuItem>
           ))}
         </Select>
       </FormControl>

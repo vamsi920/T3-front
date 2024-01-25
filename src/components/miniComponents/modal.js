@@ -20,8 +20,8 @@ const style = {
     return (
       <div>
         <Modal
-          open={openMedicineInfo.status}
-          onClose={handleMedicineInfoClose}
+          // open={openMedicineInfo.status}
+          // onClose={handleMedicineInfoClose}
           aria-labelledby="modal-modal-title"
           aria-describedby="modal-modal-description"
         >
