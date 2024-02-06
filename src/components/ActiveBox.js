@@ -97,7 +97,7 @@ const fetchData = async (NDC) => {
   }
 };
 
-const Home = () => {
+const ActiveBox = () => {
   ////////// local states////////////////////////////////
   const [rowsFinal, setRows] = useState([]);
   const [checked, setChecked] = React.useState(false);
@@ -588,10 +588,303 @@ const Home = () => {
   };
 
   return (
-    <div className="Home">
-      Hey
+    <div className="App">
+      <Box
+        component="form"
+        onSubmit={handleFormSubmit}
+        noValidate
+        autoComplete="off"
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          padding: "20px",
+        }}
+      >
+        <TextField
+          id="barcodeInput"
+          name="barcodeInput"
+          label="Click here to enter NDC or Scan the 2d barcode"
+          variant="outlined"
+          style={{ width: "500px" }}
+        />
+
+        <div>
+          <Box
+            sx={{
+              border: "1px dashed",
+              borderColor: "primary.main",
+              padding: "10px",
+              // marginLeft: '10px',
+            }}
+            onMouseEnter={handleBoxHover}
+            onMouseLeave={handleBoxLeave}
+          >
+            {activeBox === undefined || activeBox.boxName === undefined ? (
+              <Button onClick={handleCreateBox}>Create Box</Button>
+            ) : (
+              <div>
+                <p>{"Active Box: " + activeBox.boxName}</p>
+                {isHovered && (
+                  <div>
+                    <Button onClick={handleConfirmationOpen}>
+                      Close the box
+                    </Button>
+                    {isConfirmationOpen && (
+                      <div>
+                        <p>Are you sure you want to close the box?</p>
+                        <Button onClick={handleConfirmationYes}>Yes</Button>
+                        <Button onClick={handleConfirmationClose}>No</Button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+          </Box>
+        </div>
+
+        {/* Export button aligned to the right */}
+        <Box sx={{ m: 1, position: "relative" }}>
+          <Button
+            variant="contained"
+            sx={buttonSx}
+            disabled={loading}
+            onClick={handleExportReportButtonClick}
+          >
+            {success ? <CheckIcon /> : "Export Report"}
+          </Button>
+          {loading && (
+            <CircularProgress
+              sx={{
+                color: green[500],
+                width: 40,
+                height: 40,
+                position: "absolute",
+                top: "50%",
+                left: "50%",
+                marginTop: "-12px",
+                marginLeft: "-12px",
+              }}
+            />
+          )}
+        </Box>
+      </Box>
+      <TableContainer component={Paper}>
+        <Table sx={{ minWidth: 650 }} aria-label="simple table">
+          <TableHead>
+            <TableRow>
+              <TableCell>NDC</TableCell>
+              <TableCell align="left">Manufacturer</TableCell>
+              <TableCell align="left">Medicine</TableCell>
+              <TableCell align="left">Lot</TableCell>
+              <TableCell align="left">Expiry</TableCell>
+              <TableCell align="left">mg</TableCell>
+              <TableCell align="left">QTY</TableCell>
+              <TableCell align="left">Price {"(usd)"}</TableCell>
+              <TableCell align="left">Total Price {"(usd)"}</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {/* {rowsFinal.map((row) => ( */}
+            {rowsFinal.length === 0 ? (
+              <TableRow
+                key="1"
+                sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+              >
+                <TableCell component="th" scope="row">
+                  {"No medicines found for the given box name"}
+                </TableCell>
+              </TableRow>
+            ) : (
+              rowsFinal.map((row) => (
+                <TableRow
+                  key={row.NDC}
+                  sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+                >
+                  <TableCell component="th" scope="row">
+                    {row.NDC}
+                  </TableCell>
+                  <TableCell align="left">{row.Manufacturer}</TableCell>
+                  <TableCell
+                    align="left"
+                    onClick={() => {
+                      var thisMedicine = {};
+
+                      fullData["fullData"].forEach((element) => {
+                        if (
+                          element["product_ndc"].split("-").join("") ===
+                          row.NDC.slice(0, row.NDC.length - 2)
+                        ) {
+                          thisMedicine = element;
+                        }
+                      });
+                      if (!Object.isExtensible(thisMedicine)) {
+                        thisMedicine = { ...thisMedicine }; // Create a new object that is extensible
+                      }
+                      thisMedicine["status"] = true; // Add the property
+
+                      setMedicineInfo(thisMedicine);
+                    }}
+                  >
+                    {row.Medicine}
+                  </TableCell>
+                  <TableCell align="left">{row.Lot}</TableCell>
+                  <TableCell align="left">{row.Expiry}</TableCell>
+                  <TableCell align="left">{row.mg}</TableCell>
+                  <TableCell align="left">{row.QTY}</TableCell>
+                  <TableCell align="left">{row.price}</TableCell>
+                  <TableCell align="left">
+                    {(parseFloat(row.price) * parseFloat(row.QTY)).toFixed(2)}
+                  </TableCell>
+
+                  {/* button to remote the entry */}
+                  <TableCell align="left">
+                    <Stack>
+                      <Button
+                        variant="contained"
+                        color="success"
+                        onClick={() => {
+                          handleEditMedicineEntry(row);
+                        }}
+                      >
+                        Edit
+                      </Button>
+                    </Stack>
+                  </TableCell>
+                  <TableCell align="left">
+                    <Stack>
+                      <Button
+                        variant="contained"
+                        color="error"
+                        onClick={() => {
+                          console.log(row);
+                          // const index = rowsFinal.indexOf(row);
+                          // if (index > -1) {
+                          //   rowsFinal.splice(index, 1);
+                          //   setRows([...rowsFinal]);
+                          // }
+                          fetch(
+                            process.env.REACT_APP_QR_BACKEND_URL +
+                              "/deleteMedicineFromBox",
+                            {
+                              method: "POST",
+                              headers: {
+                                "Content-Type": "application/json",
+                              },
+                              body: JSON.stringify({
+                                medicineID: row.medicineID,
+                                boxName: activeBox.boxName,
+                              }),
+                            }
+                          )
+                            .then((response) => response.json())
+                            .then((result) => {
+                              // Handle the response from the server
+                              console.log(result);
+                              if (result.error) {
+                                setRows([]);
+                              } else {
+                                setRows(result);
+                              }
+                            })
+                            .catch((error) => {
+                              // Handle any errors that occurred during the request
+                              console.error(error);
+                            });
+
+                          // dispatch(removeEntry(row.NDC));
+                        }}
+                      >
+                        Delete
+                      </Button>
+                    </Stack>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      <FormControl
+        style={{
+          marginTop: "10px",
+        }}
+      >
+        <InputLabel id="account">Account</InputLabel>
+        <Select
+          labelId="account"
+          id="account"
+          value={accountsSetted}
+          label="Account"
+          onChange={handleChangeAccount}
+          onLoad={() => {}}
+          style={{
+            width: "200px",
+          }}
+        >
+          {Object.keys(accounts).map((e, v) => (
+            <MenuItem value={e}>{accounts[e]['name']}</MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+      <FormControl
+        style={{
+          marginTop: "10px",
+        }}
+      >
+        <InputLabel id="wholesaler">Wholesaler</InputLabel>
+        <Select
+          labelId="wholesaler"
+          id="wholesaler"
+          value={wholesalersSetted}
+          label="wholesaler"
+          onChange={handleChangeWholesaler}
+          style={{
+            width: "200px",
+          }}
+        >
+          {Object.keys(wholesalers).map((e, v) => (
+            <MenuItem value={e}>{wholesalers[e]['name']}</MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+      <Stack
+        style={{
+          marginTop: "50px",
+          width: "100%",
+          alignContent: "center",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <Button
+          variant="contained"
+          color="success"
+          onClick={() => {
+            // console.log(rowsFinal)
+            ExportToExcelAPI();
+          }}
+          style={{
+            width: "200px",
+          }}
+        >
+          Export
+        </Button>
+      </Stack>
+      <Slide direction="up" in={checked} mountOnEnter unmountOnExit>
+        {icon}
+      </Slide>
+      <ModalComponent
+        openMedicineInfo={medicineInfo}
+        handleMedicineInfoClose={() => {
+          medicineInfo.status = false;
+          setMedicineInfo(medicineInfo);
+        }}
+      />
     </div>
   );
 };
 
-export default Home;
+export default ActiveBox;
