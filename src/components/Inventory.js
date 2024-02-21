@@ -77,49 +77,14 @@ const Inventory = () => {
           : [];
         const uniqueShelfs = [...new Set(shelfs)];
         setShelfs(uniqueShelfs);
-        console.log(uniqueShelfs);
+        // console.log(uniqueShelfs);
         setInventory(dataFinalArray);
-        // const response1 = await fetch(
-        //   process.env.REACT_APP_QR_BACKEND_URL + "/inventory/getShelf", {
-        //     method: "POST",
-        // body: JSON.stringify({
-        //   storeName: "Quick Returns"
-        // }),
-        // headers: {
-        //   "Content-type": "application/json; charset=UTF-8",
-        // }
-        //   }
-        // );
-        // response1.json()
-        //   .then((data1) => {
-        //     const names = Array.isArray(data1) ? data1.map(item => item.sh.name) : [];
-        //     const sortedNames = names.sort();
-        //     setShelfs(sortedNames);
-        //     console.log(sortedNames);
-        //   });
+        console.log(inventory)
+
       } catch (error) {
         console.log(error);
       }
-      // try{
-      //   const response = await fetch(
-      //     process.env.REACT_APP_QR_BACKEND_URL + "/inventory/getShelf", {
-      //       method: "POST",
-      //   body: JSON.stringify({
-      //     storeName: "Quick Returns"
-      //   }),
-      //   headers: {
-      //     "Content-type": "application/json; charset=UTF-8",
-      //   }
-      //     }
-      //   );
-      //   const data = await response.json();
-      //   const names = Array.isArray(data) ? data.map(item => item.sh.name) : [];
-      //   console.log(names);
-      //   setShelfs(names);
-      // }
-      // catch (error) {
-      //   console.log(error);
-      // }
+
     };
 
     fetchData();
@@ -148,12 +113,81 @@ const Inventory = () => {
   const [newShelf, setNewShelf] = useState("");
   const [barcodeInput, setBarcodeInput] = useState("");
 
-  const handleMedicineSubmit = (e) => {
+  const handleMedicineSubmit = async (e) => {
     e.preventDefault();
 
     // Perform form submission logic here
     // You can access the form values using the state variables (ndc, mfg, name, lot, exp, year, qty, shelf)
     console.log(ndc, mfg, name, lot, exp, year, qty, shelf);
+    if(mfg===""){
+      const res = await fetchData(ndc);
+      var packaging = res["results"][0].packaging;
+          packaging.forEach((element) => {
+            if (element["package_ndc"].split("-")[2] === ndc.slice(-2)) {
+              res["results"][0].description = element["description"];
+            }
+          });
+          var desc = res["results"][0].description;
+          var dsg = res["results"][0].dosage_form;
+          var man = res["results"][0].labeler_name;
+          var med = res["results"][0].brand_name;
+          var mg = res["results"][0].active_ingredients[0].strength;
+          console.log(res);
+          setMfg(man);
+          setName(med);
+
+    }
+      
+    try {
+      // first we check if the medicine is present or not from the inventory Array 
+      var present = false;
+      for (let i = 0; i < inventory.length; i++) {
+        if (inventory[i].NDC === ndc && inventory[i].LOT === lot) {
+          present = true;
+          // break;
+          if(inventory[i].SHELF === shelf){
+              console.log("same shelf");
+          }
+        }
+      }
+      // if (present) {
+         
+      //   alert("Medicine already exists in the inventory");
+      //   return;
+      // }
+
+
+      
+
+      const response = await axios.post(
+        process.env.REACT_APP_QR_BACKEND_URL + "/inventory/addMedicine",
+        {
+          shelfName: shelf,
+          storeName: "Quick Returns",
+          medicineData: {
+            NDC: ndc,
+            MFG: man,
+            NAME: med,
+            LOT: lot,
+            EXP: exp,
+            YEAR: year,
+            QTY: qty,
+          },
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      console.log(response.data);
+      // Handle the response data as needed
+  
+    } catch (error) {
+      console.log("Error:", error);
+      // Handle the error appropriately
+    }
+    
     // Reset form fields
     setNdc("");
     setMfg("");
@@ -211,6 +245,154 @@ const Inventory = () => {
     setNewShelf("");
   };
 
+  const fetchAndParseData = async (variant) => {
+    console.log(process.env.REACT_APP_QR_OPENFDA_SEARCH_URL);
+    const query =
+      process.env.REACT_APP_QR_OPENFDA_SEARCH_URL + variant + "&limit=1";
+    const response = await fetch(query);
+    const data = await response.json();
+    return data;
+  };
+
+
+
+  const fetchData = async (NDC) => {
+    var ndcVariant1 = NDC.slice(0, 5) + "-" + NDC.slice(5, 8);
+    var ndcVariant2 = NDC.slice(0, 5) + "-" + NDC.slice(5, 9);
+    var ndcVariant3 = NDC.slice(0, 4) + "-" + NDC.slice(4, 8);
+  
+    try {
+      const resp1 = await fetchAndParseData(ndcVariant1);
+      console.log(resp1);
+      return resp1;
+    } catch (error1) {
+      try {
+        const resp2 = await fetchAndParseData(ndcVariant2);
+        console.log(resp2);
+        return resp2;
+      } catch (error2) {
+        try {
+          const resp3 = await fetchAndParseData(ndcVariant3);
+          console.log(resp3);
+          return resp3;
+        } catch (error3) {
+          console.error("Error fetching data for all NDC variants:", error3);
+          throw error3; // Re-throw the last error if none of the variants succeed
+        }
+      }
+    }
+  };
+
+  const handleFormSubmit = async (event) => {
+    event.preventDefault(); // Prevents the default form submission behavior
+    const barcodeValue = event.target.elements.barcodeInput.value;
+    // if (scanChecked) {
+    //   // Process the barcodeInput data here
+    //   console.log("Scanned Barcode:", barcodeInput);
+    // }
+    console.log(`Entered barcode: ${barcodeValue}`);
+
+    /////// converting barcode value to the original values
+    var NDC = "";
+    var man = "";
+    var med = "";
+    var lot = "";
+    var exp = "";
+    var mg = "";
+    var dsg = "";
+    // var qt = 0
+    // counting all the integers in the given input
+    var count = (barcodeValue.match(/\d/g) || []).length;
+    // console.log(count)
+    if (count > 0 && count < 11) {
+      NDC = barcodeValue.match(/\d/g);
+      NDC = NDC.join("");
+      const lotInput = window.prompt("Enter Lot Number:", "");
+      lot = lotInput;
+      const expInput = window.prompt("Enter Expiry Date(MM/YY/DD):", "");
+      exp = expInput;
+
+      // const window.prompt()
+      // setOpenSlide(true);
+      // lot = lotState;
+      // exp = expState;
+    } else {
+      var b = barcodeValue.split("(");
+
+      for (let index = 1; index < b.length; index++) {
+        let bb = b[index].split(")");
+        if (bb[0] === "01") {
+          NDC = bb[1].slice(3, 13);
+        } else if (bb[0] === "17") {
+          exp = bb[1];
+          // converting yymmdd to mm/yy/dd
+          exp = exp.slice(2, 4) + "/" + exp.slice(0, 2) + "/" + exp.slice(4, 6);
+        } else if (bb[0] === "10") {
+          lot = bb[1];
+        }
+      }
+    }
+    if (lot !== "" && exp !== "") {
+      const quantityInput = window.prompt("Enter Quantity:", "1");
+      const quantity = parseInt(quantityInput, 10);
+      const shelfNameInput = window.prompt("Enter Shelf Name:", "");
+      if (!shelfs.includes(shelfNameInput)) {
+        const createNewShelf = window.confirm("Shelf does not exist. Do you want to create a new shelf?");
+        if (createNewShelf) {
+          handleAddShelf(shelfNameInput);
+          setShelfs([...shelfs, shelfNameInput]);
+        } else {
+          alert("Please enter a valid shelf name (Ex: A1, A2, etc.)");
+          return;
+        }
+      }
+
+      if (!isNaN(quantity) && quantity > 0) {
+        try {
+          var res = await fetchData(NDC);
+          // matching NDC last two digits with the packaging
+          var packaging = res["results"][0].packaging;
+          packaging.forEach((element) => {
+            if (element["package_ndc"].split("-")[2] === NDC.slice(-2)) {
+              res["results"][0].description = element["description"];
+            }
+          });
+          var desc = res["results"][0].description;
+          dsg = res["results"][0].dosage_form;
+          man = res["results"][0].labeler_name;
+          med = res["results"][0].brand_name;
+          mg = res["results"][0].active_ingredients[0].strength;
+          console.log(res);
+          setNdc(NDC);
+          setLot(lot);
+          const months = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"];
+          const expMonth = months[parseInt(exp.slice(0, 2)) - 1];
+          const expYear = "20" + exp.slice(3, 5);
+
+          setExp(expMonth);
+          setYear(expYear);
+          setQty(quantity);
+          setShelf(shelfNameInput);
+          setMfg(man);
+          setName(med);
+
+
+        } catch (err) {
+          alert("Please enter a valid code");
+          console.log(err);
+        }
+      } else {
+        console.log("Please enter a valid quantity");
+      }
+    }
+    // const query = 'https://api.fda.gov/drug/ndc.json?search=product_ndc:'+NDC+'&limit=1';
+
+    // clearing search bar input after sending the data
+    document.getElementById("barcodeInput").value = "";
+    // console.log(barcodeInput)
+    // console.log(data);
+  };
+
 
   const handleDeleteShelf = async (shelfName) => {
     try {
@@ -255,7 +437,7 @@ const Inventory = () => {
           }}
           onClick={() => console.log(inventory)}
         >
-          + Add Medicine
+          Console check
         </Button>
         <Accordion style={{ backgroundColor: "#eee", marginTop: "10px" }}>
           <AccordionSummary
@@ -268,17 +450,24 @@ const Inventory = () => {
           </AccordionSummary>
           <AccordionDetails>
             <form 
-              onSubmit={()=>console.log('hello')}
+              onSubmit={handleFormSubmit}
               style={{ display: "flex", flexDirection: "column" }}
             >
               <Box sx={{ marginBottom: "10px", display: "flex" }}>
-                <TextField
+                {/* <TextField
                   label="Click here and scan 2D bar"
                   value={barcodeInput}
                   onChange={(e) => setBarcodeInput(e.target.value)}
                   className="form-input"
                   sx={{ width: "100%" }}
-                />
+                /> */}
+                <TextField
+          id="barcodeInput"
+          name="barcodeInput"
+          label="Click here to enter NDC or Scan the 2d barcode"
+          variant="outlined"
+          style={{ width: "500px" }}
+        />
               </Box>
             </form>
 Or
@@ -354,6 +543,7 @@ Or
                 variant="contained"
                 color="primary"
                 className="form-button"
+
               >
                 Submit
               </Button>
