@@ -141,24 +141,92 @@ const Inventory = () => {
     try {
       // first we check if the medicine is present or not from the inventory Array 
       var present = false;
+      var shelfPresent = false;
       for (let i = 0; i < inventory.length; i++) {
-        if (inventory[i].NDC === ndc && inventory[i].LOT === lot) {
+        if (inventory[i].NDC === ndc && inventory[i].LOT === lot && inventory[i].EXP === exp && inventory[i].YEAR === year) {
           present = true;
           // break;
           if(inventory[i].SHELF === shelf){
               console.log("same shelf");
+              shelfPresent = true;
+              var oldInventory = inventory[i];
+              inventory[i].QTY = parseInt(inventory[i].QTY) + parseInt(qty);
+              console.log(inventory[i].QTY);
+              const response = await axios.post(
+                process.env.REACT_APP_QR_BACKEND_URL + "/inventory/updateMedicine",
+                {
+                  storeName: "Quick Returns",
+                  originalMed: oldInventory,
+                  updatedMed: inventory[i],
+                },
+                {
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                }
+              );
+              console.log(response.data);
+
           }
+          else{
+            console.log("different shelf");
+            // const attachMedicineToNewShelf = async () => {
+            //   try {
+            //     const response = await axios.post(
+            //       process.env.REACT_APP_QR_BACKEND_URL + "/inventory/attachMedicineToNewShelf",
+            //       {
+            //         storeName: "Quick Returns",
+            //         NDC: ndc,
+            //         LOT: lot,
+            //         YEAR: year,
+            //         EXP: exp,
+            //         shelfName: shelf,
+            //       },
+            //       {
+            //         headers: {
+            //           "Content-Type": "application/json",
+            //         },
+            //       }
+            //     );
+            //     console.log(response.data);
+            //   } catch (error) {
+            //     console.error(error);
+            //   }
+            // };
+  
+            // Call the function to attach medicine to a new shelf
+            // attachMedicineToNewShelf();
+            // oldInventory = inventory[i];
+            // inventory[i].SHELF = shelf;
+            // inventory[i].QTY = qty;
+            // const response = await axios.post(
+            //   process.env.REACT_APP_QR_BACKEND_URL + "/inventory/updateMedicine",
+            //   {
+            //     storeName: "Quick Returns",
+            //     originalMed: oldInventory,
+            //     updatedMed: inventory[i],
+            //   },
+            //   {
+            //     headers: {
+            //       "Content-Type": "application/json",
+            //     },
+            //   }
+            // );
+            // console.log(response.data);
+          // alert("medicine present, do you want to add the medicine to a new shelf?")
+          
+
+          }
+
+          
+
+          // break;
         }
-      }
-      // if (present) {
-         
-      //   alert("Medicine already exists in the inventory");
-      //   return;
-      // }
-
-
+       
       
+    }
 
+    if(present === false){
       const response = await axios.post(
         process.env.REACT_APP_QR_BACKEND_URL + "/inventory/addMedicine",
         {
@@ -166,8 +234,8 @@ const Inventory = () => {
           storeName: "Quick Returns",
           medicineData: {
             NDC: ndc,
-            MFG: man,
-            NAME: med,
+            MFG: mfg,
+            NAME: name,
             LOT: lot,
             EXP: exp,
             YEAR: year,
@@ -181,8 +249,28 @@ const Inventory = () => {
         }
       );
       console.log(response.data);
-      // Handle the response data as needed
-  
+      }
+      else{
+        if(shelfPresent === false){
+          const response = await axios.post(
+            process.env.REACT_APP_QR_BACKEND_URL + "/inventory/attachMedicineToNewShelf",
+            {
+              storeName: "Quick Returns",
+              NDC: ndc,
+              LOT: lot,
+              YEAR: year,
+              EXP: exp,
+              shelfName: shelf,
+            },
+            {
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
+          );
+          console.log(response.data);
+        }
+      }
     } catch (error) {
       console.log("Error:", error);
       // Handle the error appropriately
