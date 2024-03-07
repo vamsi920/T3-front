@@ -171,7 +171,7 @@ const ActiveBox = () => {
       setAccounts(accounts);
       setWholesalers(wholesalers);
       console.log(wholesalers);
-      // console.log(activeBoxData);
+      console.log(activeBoxData);
       setActiveBox(activeBoxData);
       const medicinesInBoxData = await getMedicines(activeBoxData.boxName);
       if ("error" in medicinesInBoxData) {
@@ -315,6 +315,10 @@ const ActiveBox = () => {
   // console.log(data);
   const handleFormSubmit = async (event) => {
     event.preventDefault(); // Prevents the default form submission behavior
+    if (activeBox.boxesPresent===false) {
+      alert("Please create a box first before submitting the value.");
+      return;
+    }
     const barcodeValue = event.target.elements.barcodeInput.value;
     if (scanChecked) {
       // Process the barcodeInput data here

@@ -1,39 +1,39 @@
 import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import Paper from "@mui/material/Paper";
-import React, { useState, useEffect, useRef } from "react";
+// import Table from "@mui/material/Table";
+// import TableBody from "@mui/material/TableBody";
+// import TableCell from "@mui/material/TableCell";
+// import TableContainer from "@mui/material/TableContainer";
+// import TableHead from "@mui/material/TableHead";
+// import TableRow from "@mui/material/TableRow";
+// import Paper from "@mui/material/Paper";
+import React, { useState, useEffect } from "react";
 import Stack from "@mui/material/Stack";
 import Button from "@mui/material/Button";
-import { useSelector, useDispatch } from "react-redux";
-import { addEntry, removeEntry, editEntry } from "../reducers/dataSlice";
-import { addFullEntry } from "../reducers/fullDataSlice";
-import Slide from "@mui/material/Slide";
-import icon from "./miniComponents/alertbox";
-import CircularProgress from "@mui/joy/CircularProgress";
-import Select from "@mui/material/Select";
-import InputLabel from "@mui/material/InputLabel";
-import MenuItem from "@mui/material/MenuItem";
-import FormControl from "@mui/material/FormControl";
-import { green } from "@mui/material/colors";
-import CheckIcon from "@mui/icons-material/Check";
-import ModalComponent from "./miniComponents/modal";
-import getActiveBox from "../functions/getActiveBox";
-import getMedicines from "../functions/getMedicines";
-import getAccounts from "../functions/getAccounts";
-import getWholesalers from "../functions/getWholesalers";
+// import { useSelector, useDispatch } from "react-redux";
+// import { addEntry, removeEntry, editEntry } from "../reducers/dataSlice";
+// import { addFullEntry } from "../reducers/fullDataSlice";
+// import Slide from "@mui/material/Slide";
+// import icon from "./miniComponents/alertbox";
+// import CircularProgress from "@mui/joy/CircularProgress";
+// import Select from "@mui/material/Select";
+// import InputLabel from "@mui/material/InputLabel";
+// import MenuItem from "@mui/material/MenuItem";
+// import FormControl from "@mui/material/FormControl";
+// import { green } from "@mui/material/colors";
+// import CheckIcon from "@mui/icons-material/Check";
+// import ModalComponent from "./miniComponents/modal";
+// import getActiveBox from "../functions/getActiveBox";
+// import getMedicines from "../functions/getMedicines";
+// import getAccounts from "../functions/getAccounts";
+// import getWholesalers from "../functions/getWholesalers";
 import Accordion from "@mui/material/Accordion";
 import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
-import Typography from "@mui/material/Typography";
-import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
-import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
-import { useNavigate } from "react-router-dom";
+// import Typography from "@mui/material/Typography";
+// import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
+// import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
+// import { useNavigate } from "react-router-dom";
 import { DataGrid } from "@mui/x-data-grid";
 import Chip from "@mui/material/Chip";
 import { Grid } from "@mui/material";
@@ -79,7 +79,7 @@ const Inventory = () => {
         setShelfs(uniqueShelfs);
         // console.log(uniqueShelfs);
         setInventory(dataFinalArray);
-        console.log(inventory)
+        // console.log(inventory)
 
       } catch (error) {
         console.log(error);
@@ -88,18 +88,18 @@ const Inventory = () => {
     };
 
     fetchData();
-    console.log(shelfs);
+    // console.log(shelfs);
   }, []);
   const columns = [
     { field: "id", headerName: "ID", width: 90 },
-    { field: "EXP", headerName: "EXP", width: 90 },
-    { field: "LOT", headerName: "LOT", width: 120 },
+    { field: "NDC", headerName: "NDC", width: 150 },
     { field: "MFG", headerName: "MFG", width: 250 },
     { field: "NAME", headerName: "NAME", width: 300 },
-    { field: "NDC", headerName: "NDC", width: 150 },
+    { field: "LOT", headerName: "LOT", width: 120 },
+    { field: "EXP", headerName: "EXP", width: 90 },
+    { field: "YEAR", headerName: "YEAR", width: 100 },
     { field: "QTY", headerName: "QTY", width: 80, editable: true },
     { field: "SHELF", headerName: "SHELF", width: 100, editable: true },
-    { field: "YEAR", headerName: "YEAR", width: 100 },
   ];
   const [ndc, setNdc] = useState("");
   const [mfg, setMfg] = useState("");
@@ -111,7 +111,7 @@ const Inventory = () => {
   const [shelf, setShelf] = useState("");
   const [shelfs, setShelfs] = useState("");
   const [newShelf, setNewShelf] = useState("");
-  const [barcodeInput, setBarcodeInput] = useState("");
+  // const [barcodeInput, setBarcodeInput] = useState("");
 
   const handleMedicineSubmit = async (e) => {
     e.preventDefault();
@@ -127,11 +127,11 @@ const Inventory = () => {
               res["results"][0].description = element["description"];
             }
           });
-          var desc = res["results"][0].description;
-          var dsg = res["results"][0].dosage_form;
+          // var desc = res["results"][0].description;
+          // var dsg = res["results"][0].dosage_form;
           var man = res["results"][0].labeler_name;
           var med = res["results"][0].brand_name;
-          var mg = res["results"][0].active_ingredients[0].strength;
+          // var mg = res["results"][0].active_ingredients[0].strength;
           console.log(res);
           setMfg(man);
           setName(med);
@@ -170,57 +170,7 @@ const Inventory = () => {
           }
           else{
             console.log("different shelf");
-            // const attachMedicineToNewShelf = async () => {
-            //   try {
-            //     const response = await axios.post(
-            //       process.env.REACT_APP_QR_BACKEND_URL + "/inventory/attachMedicineToNewShelf",
-            //       {
-            //         storeName: "Quick Returns",
-            //         NDC: ndc,
-            //         LOT: lot,
-            //         YEAR: year,
-            //         EXP: exp,
-            //         shelfName: shelf,
-            //       },
-            //       {
-            //         headers: {
-            //           "Content-Type": "application/json",
-            //         },
-            //       }
-            //     );
-            //     console.log(response.data);
-            //   } catch (error) {
-            //     console.error(error);
-            //   }
-            // };
-  
-            // Call the function to attach medicine to a new shelf
-            // attachMedicineToNewShelf();
-            // oldInventory = inventory[i];
-            // inventory[i].SHELF = shelf;
-            // inventory[i].QTY = qty;
-            // const response = await axios.post(
-            //   process.env.REACT_APP_QR_BACKEND_URL + "/inventory/updateMedicine",
-            //   {
-            //     storeName: "Quick Returns",
-            //     originalMed: oldInventory,
-            //     updatedMed: inventory[i],
-            //   },
-            //   {
-            //     headers: {
-            //       "Content-Type": "application/json",
-            //     },
-            //   }
-            // );
-            // console.log(response.data);
-          // alert("medicine present, do you want to add the medicine to a new shelf?")
-          
-
           }
-
-          
-
-          // break;
         }
        
       
@@ -508,7 +458,7 @@ const Inventory = () => {
 
   return (
     <div>
-      <h1>Inventory Page</h1>
+      <h1 style={{ textAlign: "center", color: "grey", textTransform: "uppercase", marginTop:"70px" }}>Inventory Page</h1>
       <Box
         sx={{
           display: "flex",
@@ -517,17 +467,9 @@ const Inventory = () => {
           marginBottom: "10px",
         }}
       >
-        <Button
-          style={{
-            borderRadius: "5px",
-            backgroundColor: "#eee",
-            marginRight: 10,
-          }}
-          onClick={() => console.log(inventory)}
-        >
-          Console check
-        </Button>
-        <Accordion style={{ backgroundColor: "#eee", marginTop: "10px" }}>
+       
+        <Accordion style={{ boxShadow: "0 0 5px rgba(0, 0, 0, 0.3)",
+           marginTop: "10px" }}>
           <AccordionSummary
             //   expandIcon={<ExpandMoreIcon />}
             aria-controls="panel1-content"
@@ -640,7 +582,8 @@ Or
         </Accordion>
         <Accordion
           style={{
-            backgroundColor: "#eee",
+
+            boxShadow: "0 0 5px rgba(0, 0, 0, 0.3)",
             marginTop: "10px",
             marginLeft: "10px",
           }}
@@ -692,6 +635,16 @@ Or
                             handleDeleteShelf(shelf);
                           }
                         }}
+                        style={{
+                          width: "100%",
+                          margin: "5px",
+                          borderRadius: "5px",
+                          transition: "width 0.3s",
+                        }}
+                        classes={{
+                          root: "chip-root",
+                          label: "chip-label",
+                        }}
                       />
                     </Grid>
                   ))
@@ -702,6 +655,29 @@ Or
             </Stack>
           </AccordionDetails>
         </Accordion>
+<Button
+  onClick={() => {
+    const exportInventoryToReport = async (data) => {
+      try {
+        const response = await axios.post(process.env.REACT_APP_QR_BACKEND_URL +'/inventory/exportInventoryToReport', { data });
+        alert("exported to excel file")
+        return response.data;
+      } catch (error) {
+        console.error(error);
+        return { error: error.message };
+      }
+    };
+
+    exportInventoryToReport(inventory);
+  }}
+  variant="outlined"
+  color="primary"
+  className="form-button"
+  style={{ marginLeft: "10px" }}
+>
+  Export
+</Button>
+        
       </Box>
 
       <Box sx={{ width: "100%" }}>

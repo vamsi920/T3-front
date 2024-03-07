@@ -1,0 +1,12 @@
+version: '3'
+services:
+  web:
+    stdin_open: true
+    image: qr-frontend
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '3000:3000'
+    volumes:
+      - ./src:/app/src
