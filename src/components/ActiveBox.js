@@ -11,7 +11,7 @@ import React, { useState, useEffect } from "react";
 import Stack from "@mui/material/Stack";
 import Button from "@mui/material/Button";
 import { useSelector, useDispatch } from "react-redux";
-import { addEntry, removeEntry, editEntry } from "../reducers/dataSlice";
+import { addEntry, editEntry } from "../reducers/dataSlice";
 import { addFullEntry } from "../reducers/fullDataSlice";
 import Slide from "@mui/material/Slide";
 import icon from "./miniComponents/alertbox";
@@ -27,7 +27,6 @@ import getActiveBox from "../functions/getActiveBox";
 import getMedicines from "../functions/getMedicines";
 import getAccounts from "../functions/getAccounts";
 import getWholesalers from "../functions/getWholesalers";
-import Typography from '@mui/material/Typography';
 import Modal from '@mui/material/Modal';
 //////// function to convert data to json format
 const createData = (
@@ -128,7 +127,7 @@ const ActiveBox = () => {
   const [activeBox, setActiveBox] = useState({});
   const [isHovered, setIsHovered] = useState(false);
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
-  const [medicinesInBox, setMedicinesInBox] = useState([]);
+  // const [medicinesInBox, setMedicinesInBox] = useState([]);
   const [accounts, setAccounts] = useState({});
   const [wholesalers, setWholesalers] = useState({});
   const [modalOpen, setModalOpen] = React.useState(false);
@@ -163,7 +162,7 @@ const ActiveBox = () => {
   };
 
   useEffect(() => {
-    return async () => {
+    const fetchData = async () => {
       const activeBoxData = await getActiveBox();
       const accounts = await getAccounts();
       const wholesalers = await getWholesalers();
@@ -175,21 +174,27 @@ const ActiveBox = () => {
       setActiveBox(activeBoxData);
       const medicinesInBoxData = await getMedicines(activeBoxData.boxName);
       if ("error" in medicinesInBoxData) {
-        // console.log('came here')
         setRows([]);
         console.log(rowsFinal.length);
       } else {
         console.log(medicinesInBoxData);
         setRows(medicinesInBoxData);
       }
-
-      // setRows(medicinesInBoxData);
+  
       for (let i = 0; i < medicinesInBoxData.length; i++) {
         dispatch(addEntry(medicinesInBoxData[i]));
       }
       clearTimeout(timer.current);
     };
-  }, []);
+  
+    fetchData();
+  
+    // No need to return anything from the cleanup function
+    // Cleanup function runs synchronously after the component unmounts
+  }, [
+    // dispatch, rowsFinal.length
+  ]);
+  
 
   const handleExportReportButtonClick = () => {
     if (!loading) {
@@ -202,7 +207,7 @@ const ActiveBox = () => {
   };
   /////////////////////////////////////////////////////////////////////
 
-  const handleModalOpen = () => setModalOpen(true);
+  // const handleModalOpen = () => setModalOpen(true);
   const handleModalClose = () => setModalOpen(false);
 
   const handleModalSave = async() => {

@@ -79,7 +79,7 @@ const Inventory = () => {
         setShelfs(uniqueShelfs);
         // console.log(uniqueShelfs);
         setInventory(dataFinalArray);
-        // console.log(inventory)
+        console.log(inventory)
 
       } catch (error) {
         console.log(error);
@@ -336,8 +336,8 @@ const Inventory = () => {
     var med = "";
     var lot = "";
     var exp = "";
-    var mg = "";
-    var dsg = "";
+    // var mg = "";
+    // var dsg = "";
     // var qt = 0
     // counting all the integers in the given input
     var count = (barcodeValue.match(/\d/g) || []).length;
@@ -395,11 +395,11 @@ const Inventory = () => {
               res["results"][0].description = element["description"];
             }
           });
-          var desc = res["results"][0].description;
-          dsg = res["results"][0].dosage_form;
+          // var desc = res["results"][0].description;
+          // dsg = res["results"][0].dosage_form;
           man = res["results"][0].labeler_name;
           med = res["results"][0].brand_name;
-          mg = res["results"][0].active_ingredients[0].strength;
+          // mg = res["results"][0].active_ingredients[0].strength;
           console.log(res);
           setNdc(NDC);
           setLot(lot);
