@@ -22,7 +22,8 @@ touch T3-front/.env
 echo "REACT_APP_QR_BACKEND_URL=http://localhost:105" >> T3-front/.env
 echo "REACT_APP_QR_OPENFDA_SEARCH_URL=https://api.fda.gov/drug/ndc.json?search=product_ndc:" >> T3-front/.env
 
-npm run start
+cd T3-front
+(npm run start&)
 
 
 

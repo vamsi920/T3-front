@@ -38,6 +38,13 @@ import { DataGrid } from "@mui/x-data-grid";
 import Chip from "@mui/material/Chip";
 import { Grid } from "@mui/material";
 import axios from "axios";
+const AWS = require("aws-sdk");
+// s3 
+const s3 = new AWS.S3({
+  accessKeyId: process.env.REACT_APP_AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.REACT_APP_AWS_SECRET_ACCESS_KEY,
+  region: process.env.REACT_APP_AWS_REGION,
+});
 
 const Inventory = () => {
   const [inventory, setInventory] = useState([]);
@@ -49,7 +56,8 @@ const Inventory = () => {
         );
         const data = await response.json();
         let dataFinal = data.data;
-        // console.log(Object.keys(dataFinal))
+        let storeName = data.storeName;
+        console.log(storeName)
         var dataFinalArray = [];
         var dataFinalArray2 = [];
         for (let key in dataFinal) {
@@ -78,6 +86,7 @@ const Inventory = () => {
         const uniqueShelfs = [...new Set(shelfs)];
         setShelfs(uniqueShelfs);
         // console.log(uniqueShelfs);
+        setStoreName(storeName);
         setInventory(dataFinalArray);
         console.log(inventory)
 
@@ -111,6 +120,8 @@ const Inventory = () => {
   const [shelf, setShelf] = useState("");
   const [shelfs, setShelfs] = useState("");
   const [newShelf, setNewShelf] = useState("");
+  const [storeName, setStoreName] = useState("");
+  const [loading, setLoading] = useState(false);
   // const [barcodeInput, setBarcodeInput] = useState("");
 
   const handleMedicineSubmit = async (e) => {
@@ -657,18 +668,40 @@ Or
         </Accordion>
 <Button
   onClick={() => {
-    const exportInventoryToReport = async (data) => {
+    const exportInventoryToReport = async (data, storeName) => {
       try {
-        const response = await axios.post(process.env.REACT_APP_QR_BACKEND_URL +'/inventory/exportInventoryToReport', { data });
-        alert("exported to excel file")
+        setLoading(true);
+        const response = await axios.post(process.env.REACT_APP_QR_BACKEND_URL +'/inventory/exportInventoryToReport', { data, storeName}, { responseType: 'blob' });
+        const blob = new Blob([response.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+
+      // Create a temporary URL for the blob
+      const url = window.URL.createObjectURL(blob);
+
+      // Create an anchor element and set its href to the temporary URL
+      const a = document.createElement('a');
+      a.href = url;
+
+      // Set the anchor element's download attribute to specify the file name
+      a.download = 'inventory.xlsx';
+
+      // Programmatically click the anchor element to trigger the file download
+      a.click();
+
+      // Clean up by revoking the temporary URL
+      window.URL.revokeObjectURL(url);
+
+      setLoading(false);
+        // alert("exported to excel file")
+       
         return response.data;
       } catch (error) {
         console.error(error);
+        setLoading(false);
         return { error: error.message };
       }
     };
 
-    exportInventoryToReport(inventory);
+    exportInventoryToReport(inventory, storeName);
   }}
   variant="outlined"
   color="primary"

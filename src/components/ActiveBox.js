@@ -28,6 +28,7 @@ import getMedicines from "../functions/getMedicines";
 import getAccounts from "../functions/getAccounts";
 import getWholesalers from "../functions/getWholesalers";
 import Modal from '@mui/material/Modal';
+import axios from "axios";
 //////// function to convert data to json format
 const createData = (
   NDC,
@@ -619,15 +620,21 @@ const ActiveBox = () => {
     dataObj = JSON.stringify(dataObj);
     // console.log(dataObj)
     try {
-      await fetch(process.env.REACT_APP_QR_BACKEND_URL + "/extoreport/", {
-        method: "POST",
-        body: dataObj,
-        headers: {
-          "Content-type": "application/json; charset=UTF-8",
-        },
-      })
-        .then((response) => response.json())
-        .then((json) => console.log(json));
+    
+        const response = await axios.post(process.env.REACT_APP_QR_BACKEND_URL + "/extoreport/", dataObj, {
+          responseType: "blob",
+          headers: {
+            "Content-Type": "application/json"
+          }
+        });
+        const blob = new Blob([response.data], {type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
+        const url = window.URL.createObjectURL(new Blob([blob]));
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = 'report.xlsx';
+        link.click();
+        window.URL.revokeObjectURL(url);
+
     } catch (err) {
       console.log(err);
     }
