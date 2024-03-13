@@ -574,27 +574,49 @@ const ActiveBox = () => {
     var fileName = "invoice_grande.xlsx";
     var dataObj = {};
     dataObj["data"] = rowsFinal;
+    console.log(activeBox.boxId)
     dataObj = JSON.stringify(dataObj);
     var acc = accounts[accountsSetted];
     var whole = wholesalers[wholesalersSetted];
-    console.log(data["data"]);
+    
     try {
-      await fetch(
-        process.env.REACT_APP_QR_BACKEND_URL + "/extodm/" + fileName,
-        {
-          method: "POST",
-          body: JSON.stringify({
-            data: data["data"],
-            account: acc,
-            wholesaler: whole,
-          }),
-          headers: {
-            "Content-type": "application/json; charset=UTF-8",
-          },
+      // await fetch(
+      //   process.env.REACT_APP_QR_BACKEND_URL + "/extodm/" + fileName,
+      //   {
+      //     method: "POST",
+      //     body: JSON.stringify({
+      //       data: data["data"],
+      //       account: acc,
+      //       wholesaler: whole,
+      //       boxName: activeBox.boxName,
+      //       boxId: activeBox.boxId
+      //     }),
+      //     headers: {
+      //       "Content-type": "application/json; charset=UTF-8",
+      //     },
+      //   }
+      // )
+      //   .then((response) => response.json())
+      //   .then((json) => console.log(json));
+      const response = await axios.post(process.env.REACT_APP_QR_BACKEND_URL + "/extodm/"+fileName,{
+        data: data["data"],
+        account: acc,
+        wholesaler: whole,
+        boxName: activeBox.boxName,
+        boxId: activeBox.boxId
+      }, {
+        responseType: "blob",
+        headers: {
+          "Content-Type": "application/json"
         }
-      )
-        .then((response) => response.json())
-        .then((json) => console.log(json));
+      });
+      const blob = new Blob([response.data], {type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
+      const url = window.URL.createObjectURL(new Blob([blob]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = 'invoice_grande.xlsx';
+      link.click();
+      window.URL.revokeObjectURL(url);
     } catch (err) {
       console.log(err);
     }
