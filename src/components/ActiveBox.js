@@ -27,7 +27,7 @@ import getActiveBox from "../functions/getActiveBox";
 import getMedicines from "../functions/getMedicines";
 import getAccounts from "../functions/getAccounts";
 import getWholesalers from "../functions/getWholesalers";
-import Modal from '@mui/material/Modal';
+import Modal from "@mui/material/Modal";
 import axios from "axios";
 //////// function to convert data to json format
 const createData = (
@@ -72,15 +72,14 @@ const fetchAndParseData = async (variant) => {
 //   console.log(ndc);
 
 const fetchData = async (NDC) => {
-  if(NDC.length ===11){
+  if (NDC.length === 11) {
     NDC = NDC.slice(0, 5) + "" + NDC.slice(6, 9);
   }
-  if(NDC[0] === "0"){
+  if (NDC[0] === "0") {
     var ndcVariant1 = NDC.slice(0, 4) + "-" + NDC.slice(4, 8);
     var ndcVariant2 = NDC.slice(0, 5) + "-" + NDC.slice(5, 8);
     var ndcVariant3 = NDC.slice(0, 5) + "-" + NDC.slice(5, 9);
-  }
-  else{
+  } else {
     ndcVariant1 = NDC.slice(0, 5) + "-" + NDC.slice(5, 8);
     ndcVariant2 = NDC.slice(0, 5) + "-" + NDC.slice(5, 9);
     ndcVariant3 = NDC.slice(0, 4) + "-" + NDC.slice(4, 8);
@@ -137,7 +136,6 @@ const ActiveBox = () => {
   const [ndc, setNdc] = useState("");
   const [price, setPrice] = useState("");
   const [quantity, setQuantity] = useState("");
-  
 
   ///////////////////////////////////////////////////////
 
@@ -162,40 +160,42 @@ const ActiveBox = () => {
     }),
   };
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const activeBoxData = await getActiveBox();
-      const accounts = await getAccounts();
-      const wholesalers = await getWholesalers();
-      console.log(accounts);
-      setAccounts(accounts);
-      setWholesalers(wholesalers);
-      console.log(wholesalers);
-      console.log(activeBoxData);
-      setActiveBox(activeBoxData);
-      const medicinesInBoxData = await getMedicines(activeBoxData.boxName);
-      if ("error" in medicinesInBoxData) {
-        setRows([]);
-        console.log(rowsFinal.length);
-      } else {
-        console.log(medicinesInBoxData);
-        setRows(medicinesInBoxData);
-      }
-  
-      for (let i = 0; i < medicinesInBoxData.length; i++) {
-        dispatch(addEntry(medicinesInBoxData[i]));
-      }
-      clearTimeout(timer.current);
-    };
-  
-    fetchData();
-  
-    // No need to return anything from the cleanup function
-    // Cleanup function runs synchronously after the component unmounts
-  }, [
-    // dispatch, rowsFinal.length
-  ]);
-  
+  useEffect(
+    () => {
+      const fetchData = async () => {
+        const activeBoxData = await getActiveBox();
+        const accounts = await getAccounts();
+        const wholesalers = await getWholesalers();
+        console.log(accounts);
+        setAccounts(accounts);
+        setWholesalers(wholesalers);
+        console.log(wholesalers);
+        console.log(activeBoxData);
+        setActiveBox(activeBoxData);
+        const medicinesInBoxData = await getMedicines(activeBoxData.boxName);
+        if ("error" in medicinesInBoxData) {
+          setRows([]);
+          console.log(rowsFinal.length);
+        } else {
+          console.log(medicinesInBoxData);
+          setRows(medicinesInBoxData);
+        }
+
+        for (let i = 0; i < medicinesInBoxData.length; i++) {
+          dispatch(addEntry(medicinesInBoxData[i]));
+        }
+        clearTimeout(timer.current);
+      };
+
+      fetchData();
+
+      // No need to return anything from the cleanup function
+      // Cleanup function runs synchronously after the component unmounts
+    },
+    [
+      // dispatch, rowsFinal.length
+    ]
+  );
 
   const handleExportReportButtonClick = () => {
     if (!loading) {
@@ -211,7 +211,7 @@ const ActiveBox = () => {
   // const handleModalOpen = () => setModalOpen(true);
   const handleModalClose = () => setModalOpen(false);
 
-  const handleModalSave = async() => {
+  const handleModalSave = async () => {
     // setLot(document.getElementById("lotNumber").value);
     // setExp(document.getElementById("expirationDate").value);
     // const quantityInput = window.prompt("Enter Quantity:", "1");
@@ -220,7 +220,7 @@ const ActiveBox = () => {
     //   const price = parseFloat(priceInput, 10);
     try {
       var res = await fetchData(ndc);
-      console.log(res)
+      console.log(res);
       // matching NDC last two digits with the packaging
       var packaging = res["results"][0].packaging;
       packaging.forEach((element) => {
@@ -236,7 +236,7 @@ const ActiveBox = () => {
       var man = res["results"][0].labeler_name;
       var med = res["results"][0].brand_name;
       var mg = res["results"][0].active_ingredients[0].strength;
-    //   // console.log(res["results"][0].medicineID)
+      //   // console.log(res["results"][0].medicineID)
       var medicineData = createData(
         ndc,
         man,
@@ -270,14 +270,12 @@ const ActiveBox = () => {
       alert("Please enter a valid code");
       console.log(err);
     }
-  
+
     setModalOpen(false);
     // handleFormSubmit();
     // console.log(lot);
     // console.log(exp);
   };
-
-
 
   const insertMedicine = (mInfo) => {
     // console.log(mInfo)
@@ -321,7 +319,7 @@ const ActiveBox = () => {
   // console.log(data);
   const handleFormSubmit = async (event) => {
     event.preventDefault(); // Prevents the default form submission behavior
-    if (activeBox.boxesPresent===false) {
+    if (activeBox.boxesPresent === false) {
       alert("Please create a box first before submitting the value.");
       return;
     }
@@ -352,9 +350,9 @@ const ActiveBox = () => {
       // lot = lotInput;
       // const expInput = window.prompt("Enter Expiry Date(MM/YY/DD):", "");
       // exp = expInput;
-      if(lot==="" || lot===null || exp==="" || exp===null)
-      {setModalOpen(true); 
-      return;
+      if (lot === "" || lot === null || exp === "" || exp === null) {
+        setModalOpen(true);
+        return;
       }
 
       // const window.prompt()
@@ -386,7 +384,7 @@ const ActiveBox = () => {
       if (!isNaN(quantity) && quantity > 0) {
         try {
           var res = await fetchData(NDC);
-          console.log(res)
+          console.log(res);
           // matching NDC last two digits with the packaging
           var packaging = res["results"][0].packaging;
           packaging.forEach((element) => {
@@ -513,49 +511,47 @@ const ActiveBox = () => {
 
   const handleChangeAccount = (event) => {
     setAccountsSetted(event.target.value);
-    fetch(process.env.REACT_APP_QR_BACKEND_URL+'/setAccountToBox', {
-      method: 'POST',
+    fetch(process.env.REACT_APP_QR_BACKEND_URL + "/setAccountToBox", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json'
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         boxId: activeBox.boxId,
-        account: event.target.value
-      })
+        account: event.target.value,
+      }),
     })
-      .then(response => response.json())
-      .then(result => {
+      .then((response) => response.json())
+      .then((result) => {
         // Handle the response from the server
         console.log(result);
       })
-      .catch(error => {
+      .catch((error) => {
         // Handle any errors that occurred during the request
         console.error(error);
       });
   };
-  
 
   const handleChangeWholesaler = (event) => {
     setWholesalersSetted(event.target.value);
-    fetch(process.env.REACT_APP_QR_BACKEND_URL+'/setWholesalerToBox', {
-      method: 'POST',
+    fetch(process.env.REACT_APP_QR_BACKEND_URL + "/setWholesalerToBox", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json'
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         boxId: activeBox.boxId,
-        wholesaler: event.target.value
-      })
+        wholesaler: event.target.value,
+      }),
     })
-      .then(response => response.json())
-      .then(result => {
+      .then((response) => response.json())
+      .then((result) => {
         // Handle the response from the server
         console.log(result);
       })
-      .catch(error => {
+      .catch((error) => {
         // Handle any errors that occurred during the request
         console.error(error);
-
       });
   };
 
@@ -574,11 +570,11 @@ const ActiveBox = () => {
     var fileName = "invoice_grande.xlsx";
     var dataObj = {};
     dataObj["data"] = rowsFinal;
-    console.log(activeBox.boxId)
+    console.log(activeBox.boxId);
     dataObj = JSON.stringify(dataObj);
     var acc = accounts[accountsSetted];
     var whole = wholesalers[wholesalersSetted];
-    
+
     try {
       // await fetch(
       //   process.env.REACT_APP_QR_BACKEND_URL + "/extodm/" + fileName,
@@ -598,23 +594,29 @@ const ActiveBox = () => {
       // )
       //   .then((response) => response.json())
       //   .then((json) => console.log(json));
-      const response = await axios.post(process.env.REACT_APP_QR_BACKEND_URL + "/extodm/"+fileName,{
-        data: data["data"],
-        account: acc,
-        wholesaler: whole,
-        boxName: activeBox.boxName,
-        boxId: activeBox.boxId
-      }, {
-        responseType: "blob",
-        headers: {
-          "Content-Type": "application/json"
+      const response = await axios.post(
+        process.env.REACT_APP_QR_BACKEND_URL + "/extodm/" + fileName,
+        {
+          data: data["data"],
+          account: acc,
+          wholesaler: whole,
+          boxName: activeBox.boxName,
+          boxId: activeBox.boxId,
+        },
+        {
+          responseType: "blob",
+          headers: {
+            "Content-Type": "application/json",
+          },
         }
+      );
+      const blob = new Blob([response.data], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
-      const blob = new Blob([response.data], {type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
       const url = window.URL.createObjectURL(new Blob([blob]));
       const link = document.createElement("a");
       link.href = url;
-      link.download = 'invoice_grande.xlsx';
+      link.download = "invoice_grande.xlsx";
       link.click();
       window.URL.revokeObjectURL(url);
     } catch (err) {
@@ -642,21 +644,25 @@ const ActiveBox = () => {
     dataObj = JSON.stringify(dataObj);
     // console.log(dataObj)
     try {
-    
-        const response = await axios.post(process.env.REACT_APP_QR_BACKEND_URL + "/extoreport/", dataObj, {
+      const response = await axios.post(
+        process.env.REACT_APP_QR_BACKEND_URL + "/extoreport/",
+        dataObj,
+        {
           responseType: "blob",
           headers: {
-            "Content-Type": "application/json"
-          }
-        });
-        const blob = new Blob([response.data], {type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
-        const url = window.URL.createObjectURL(new Blob([blob]));
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = 'report.xlsx';
-        link.click();
-        window.URL.revokeObjectURL(url);
-
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const blob = new Blob([response.data], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+      const url = window.URL.createObjectURL(new Blob([blob]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "report.xlsx";
+      link.click();
+      window.URL.revokeObjectURL(url);
     } catch (err) {
       console.log(err);
     }
@@ -683,11 +689,17 @@ const ActiveBox = () => {
 
   const handleConfirmationYes = () => {
     console.log("closed");
-    if(accountsSetted === null || accountsSetted.length === 0 || wholesalersSetted === null || wholesalersSetted.length === 0 || accountsSetted==="" || wholesalersSetted===""){
+    if (
+      accountsSetted === null ||
+      accountsSetted.length === 0 ||
+      wholesalersSetted === null ||
+      wholesalersSetted.length === 0 ||
+      accountsSetted === "" ||
+      wholesalersSetted === ""
+    ) {
       alert("Please select account and wholesaler");
       return;
     }
-    
 
     try {
       fetch(process.env.REACT_APP_QR_BACKEND_URL + "/closeBox", {
@@ -704,7 +716,8 @@ const ActiveBox = () => {
         .then((response) => response.json())
         .then((json) => {
           setRows([]);
-          console.log(json)});
+          console.log(json);
+        });
     } catch (err) {
       console.log(err);
     }
@@ -749,72 +762,80 @@ const ActiveBox = () => {
           style={{ width: "500px" }}
         />
         <Modal
-        open={modalOpen}
-        onClose={handleModalClose}
-        aria-labelledby="modal-modal-title"
-        aria-describedby="modal-modal-description"
-      >
-        <Box sx={{
-  position: 'absolute',
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
-  width: 400,
-  bgcolor: 'background.paper',
-  border: '2px solid #000',
-  boxShadow: 24,
-  p: 4,
-}}>
-<form onSubmit={handleModalSave}>
-  <TextField
-    id="lotNumber"
-    name="lotNumber"
-    label="Lot Number"
-    variant="outlined"
-    style={{ width: "200px", marginBottom: "10px" }}
-    value={lot}
-    onChange={(e) => setLot(e.target.value)}
-  />
-  <TextField
-    id="expirationDate"
-    name="expirationDate"
-    label="Expiration Date"
-    variant="outlined"
-    style={{ width: "200px", marginBottom: "10px" }}
-    value={exp}
-    onChange={(e) => setExp(e.target.value)}
-  />
-  <TextField
-    id="quantity"
-    name="quantity"
-    label="Quantity"
-    variant="outlined"
-    style={{ width: "200px", marginBottom: "10px" }}
-    value={quantity}
-    onChange={(e) => setQuantity(e.target.value)}
-  />
-  <TextField
-    id="price"
-    name="price"
-    label="Price"
-    variant="outlined"
-    style={{ width: "200px", marginBottom: "10px" }}
-    value={price}
-    onChange={(e) => setPrice(e.target.value)}
-  />
+          open={modalOpen}
+          onClose={handleModalClose}
+          aria-labelledby="modal-modal-title"
+          aria-describedby="modal-modal-description"
+        >
+          <Box
+            sx={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              width: 400,
+              bgcolor: "background.paper",
+              border: "2px solid #000",
+              boxShadow: 24,
+              p: 4,
+            }}
+          >
+            <form onSubmit={handleModalSave}>
+              <TextField
+                id="lotNumber"
+                name="lotNumber"
+                label="Lot Number"
+                variant="outlined"
+                style={{ width: "200px", marginBottom: "10px" }}
+                value={lot}
+                onChange={(e) => setLot(e.target.value)}
+              />
+              <TextField
+                id="expirationDate"
+                name="expirationDate"
+                label="Expiration Date"
+                variant="outlined"
+                style={{ width: "200px", marginBottom: "10px" }}
+                value={exp}
+                onChange={(e) => setExp(e.target.value)}
+              />
+              <TextField
+                id="quantity"
+                name="quantity"
+                label="Quantity"
+                variant="outlined"
+                style={{ width: "200px", marginBottom: "10px" }}
+                value={quantity}
+                onChange={(e) => setQuantity(e.target.value)}
+              />
+              <TextField
+                id="price"
+                name="price"
+                label="Price"
+                variant="outlined"
+                style={{ width: "200px", marginBottom: "10px" }}
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+              />
 
-
-  {/* Rest of the code */}
-</form>
-<Button variant="contained" color="primary" onClick={handleModalSave}>
-  Save
-</Button>
-<Button variant="contained" color="secondary" onClick={handleModalClose}>
-  Cancel
-</Button>
-         
-        </Box>
-      </Modal>
+              {/* Rest of the code */}
+            </form>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleModalSave}
+            >
+              Save
+            </Button>
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={handleModalClose}
+            >
+              Cancel
+            </Button>
+          </Box>
+        </Modal>
 
         <div>
           <Box
@@ -1032,7 +1053,7 @@ const ActiveBox = () => {
           }}
         >
           {Object.keys(accounts).map((e, v) => (
-            <MenuItem value={e}>{accounts[e]['name']}</MenuItem>
+            <MenuItem value={e}>{accounts[e]["name"]}</MenuItem>
           ))}
         </Select>
       </FormControl>
@@ -1053,7 +1074,7 @@ const ActiveBox = () => {
           }}
         >
           {Object.keys(wholesalers).map((e, v) => (
-            <MenuItem value={e}>{wholesalers[e]['name']}</MenuItem>
+            <MenuItem value={e}>{wholesalers[e]["name"]}</MenuItem>
           ))}
         </Select>
       </FormControl>

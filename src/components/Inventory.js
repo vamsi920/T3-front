@@ -38,6 +38,10 @@ import { DataGrid } from "@mui/x-data-grid";
 import Chip from "@mui/material/Chip";
 import { Grid } from "@mui/material";
 import axios from "axios";
+import Modal from "@mui/material/Modal";
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import { styled } from '@mui/material/styles';
+
 const AWS = require("aws-sdk");
 // s3 
 const s3 = new AWS.S3({
@@ -46,8 +50,102 @@ const s3 = new AWS.S3({
   region: process.env.REACT_APP_AWS_REGION,
 });
 
+const VisuallyHiddenInput = styled('input')({
+  clip: 'rect(0 0 0 0)',
+  clipPath: 'inset(50%)',
+  height: 1,
+  overflow: 'hidden',
+  position: 'absolute',
+  bottom: 0,
+  left: 0,
+  whiteSpace: 'nowrap',
+  width: 1,
+});
+
 const Inventory = () => {
   const [inventory, setInventory] = useState([]);
+  const [file, setFile] = useState(false);
+  const [store, setStore] = useState("");
+
+  const handleFileUpload = async (e, row) => {
+    const uFile = e.target.files[0];
+    setFile(uFile);
+    console.log(row);
+    // Send the file to the backend
+    const formData = new FormData();
+    formData.append('file', uFile);
+    formData.append('store', store); // Add store state to the form data
+    formData.append('NDC', row['NDC']);
+    formData.append('lot', row['LOT']);
+    formData.append('exp', row['EXP']);
+    formData.append('year', row['YEAR']);
+    try {
+      const response = await axios.post(process.env.REACT_APP_QR_BACKEND_URL +'/t3/uploadT3', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+      });
+      const data = response.data;
+      console.log(data);
+      // Call the updateDatabase API
+      try {
+        const resp = await axios.post(process.env.REACT_APP_QR_BACKEND_URL + '/t3/updateDatabase', {
+          store: store,
+          NDC: row['NDC'],
+          lot: row['LOT'],
+          exp: row['EXP'],
+          year: row['YEAR']
+        },
+        {
+          headers: {
+        'Content-Type': 'application/json'
+          }
+        });
+        console.log(resp.data);
+      } catch (error) {
+        console.error(error);
+      }
+      // Reload the page
+      window.location.reload();
+      
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  const handleFileDownload = async (e, row) => {
+    // Send the file to the backend
+    const formData = new FormData();
+    formData.append('store', store); // Add store state to the form data
+    formData.append('NDC', row['NDC']);
+    formData.append('lot', row['LOT']);
+    formData.append('exp', row['EXP']);
+    formData.append('year', row['YEAR']);
+    try {
+      const response = await axios.post(process.env.REACT_APP_QR_BACKEND_URL + '/t3/downloadT3', { store: store, NDC: row['NDC'], lot: row['LOT'], exp: row['EXP'], year: row['YEAR'] }, { responseType: 'blob' });
+      const blob = new Blob([response.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      console.log(response)
+      // Create a temporary URL for the blob
+      const url = window.URL.createObjectURL(blob);
+
+      // Create an anchor element and set its href to the temporary URL
+      const a = document.createElement('a');
+      a.href = url;
+
+      // Set the anchor element's download attribute to specify the file name
+      a.download = row['NDC'] + '_old_T3.docx';
+
+      // Programmatically click the anchor element to trigger the file download
+      a.click();
+
+      // Clean up by revoking the temporary URL
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.log("Error:", error);
+      // Handle the error appropriately
+    }
+  }
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -57,7 +155,8 @@ const Inventory = () => {
         const data = await response.json();
         let dataFinal = data.data;
         let storeName = data.storeName;
-        console.log(storeName)
+        setStore(storeName);
+        // console.log(storeName)
         var dataFinalArray = [];
         var dataFinalArray2 = [];
         for (let key in dataFinal) {
@@ -88,7 +187,7 @@ const Inventory = () => {
         // console.log(uniqueShelfs);
         setStoreName(storeName);
         setInventory(dataFinalArray);
-        console.log(inventory)
+        // console.log(inventory)
 
       } catch (error) {
         console.log(error);
@@ -108,7 +207,25 @@ const Inventory = () => {
     { field: "EXP", headerName: "EXP", width: 90 },
     { field: "YEAR", headerName: "YEAR", width: 100 },
     { field: "QTY", headerName: "QTY", width: 80, editable: true },
-    { field: "SHELF", headerName: "SHELF", width: 100, editable: true },
+    { field: "SHELF", headerName: "SHELF", width: 100, editable: true},
+    { field: "T3", headerName: "T3", width: 200, renderCell: (params) => {
+      if (params.value === "empty") {
+        return (
+          <Button
+            component="label"
+            role={undefined}
+            variant="contained"
+            tabIndex={-1}
+            startIcon={<CloudUploadIcon />}
+          >
+            Upload file
+            <VisuallyHiddenInput type="file" onChange={(e) => handleFileUpload(e, params.row)} />
+          </Button>
+        )
+      } else {
+        return <Button onClick={(e)=>handleFileDownload(e,params.row)}>Download</Button>;
+      }
+    }}
   ];
   const [ndc, setNdc] = useState("");
   const [mfg, setMfg] = useState("");
@@ -636,8 +753,8 @@ Or
             >
               <Grid container spacing={2}>
                 {shelfs.length > 0 ? (
-                  shelfs.map((shelf) => (
-                    <Grid item xs={12} sm={6} md={4} lg={3} xl={2}>
+                  shelfs.map((shelf, index) => (
+                    <Grid item xs={12} sm={6} md={4} lg={3} xl={2} key={index}>
                       <Chip
                         label={shelf}
                         onClick={() => {
@@ -710,6 +827,17 @@ Or
 >
   Export
 </Button>
+<Button
+  onClick={() => {
+    window.location.reload();
+  }}
+  variant="outlined"
+  color="primary"
+  className="form-button"
+  style={{ marginLeft: "10px" }}
+>
+  Refresh
+</Button>
         
       </Box>
 
@@ -751,9 +879,12 @@ Or
                     updatedRow["QTY"] !== originalRow["QTY"]
                   ) {
                     window.location.reload();
+                  // alert("Updated Successfully, please refresh the page to see the changes")
                   }
                   // alert("Updated Successfully, please refresh the page to see the changes")
                 })
+                  // Refresh the page
+                  // window.location.reload();
                 .then((json) => {
                   console.log(json);
                   // Refresh the page
@@ -763,10 +894,6 @@ Or
               console.log(err);
             }
           }}
-          onProcessRowUpdateError={(error, updatedRow, originalRow) =>
-            console.error(error, updatedRow, originalRow)
-          }
-          disableRowSelectionOnClick
           // onCellEditCommit={(params) => {
           //     console.log(params);
           // }}
